@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Profile - Extra Mile</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #02193d; color: #1a1a2e; min-height: 100vh; }
+    .header { background: linear-gradient(135deg, #0057b8, #00a3e0); color: white; padding: 24px; text-align: center; }
+    .header h1 { font-size: 1.8rem; margin-bottom: 4px; }
+    .header p { opacity: 0.9; font-size: 0.95rem; }
+    .header a { color: white; text-decoration: none; opacity: 0.8; font-size: 0.85rem; }
+    .header a:hover { opacity: 1; }
+    .container { max-width: 700px; margin: 24px auto; padding: 0 16px; }
+    .profile-section { background: #ffffff; border-radius: 16px; padding: 28px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); border: 1px solid #d0dce8; }
+    .profile-section h2 { font-size: 1.2rem; color: #0057b8; margin-bottom: 16px; }
+    .avatar-section { text-align: center; margin-bottom: 20px; }
+    .avatar-preview { width: 100px; height: 100px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 2.5rem; margin: 0 auto 12px; background: #0057b8; overflow: hidden; }
+    .avatar-preview img { width: 100%; height: 100%; object-fit: cover; }
+    .avatar-upload-btn { padding: 8px 20px; border: 1.5px dashed #c0d0e0; border-radius: 10px; background: #f5f8fc; cursor: pointer; font-size: 0.85rem; color: #0057b8; display: inline-block; }
+    .avatar-upload-btn:hover { background: #e8f4fd; border-color: #00a3e0; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 6px; color: #0057b8; text-transform: uppercase; letter-spacing: 0.3px; }
+    .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 11px 14px; border: 1.5px solid #c0d0e0; border-radius: 10px; font-size: 0.95rem; font-family: inherit; background: #ffffff; color: #1a1a2e; }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus { outline: none; border-color: #00a3e0; box-shadow: 0 0 0 3px rgba(0,163,224,0.15); }
+    .form-group textarea { resize: vertical; min-height: 70px; }
+    .form-group input::placeholder, .form-group textarea::placeholder { color: #9ab; }
+    .form-row { display: flex; gap: 14px; }
+    .form-row .form-group { flex: 1; }
+    .tag-input-wrap { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 12px; border: 1.5px solid #c0d0e0; border-radius: 10px; min-height: 44px; align-items: center; cursor: text; background: #fff; }
+    .tag-input-wrap:focus-within { border-color: #00a3e0; box-shadow: 0 0 0 3px rgba(0,163,224,0.15); }
+    .tag { display: inline-flex; align-items: center; gap: 4px; background: rgba(0,87,184,0.1); color: #0057b8; padding: 3px 10px; border-radius: 20px; font-size: 0.82rem; }
+    .tag button { background: none; border: none; color: #0057b8; cursor: pointer; font-size: 0.9rem; padding: 0 2px; }
+    .tag-input { border: none; outline: none; font-size: 0.9rem; flex: 1; min-width: 100px; padding: 4px 0; }
+    .save-btn { background: linear-gradient(135deg, #0057b8, #00a3e0); color: white; border: none; padding: 14px 24px; border-radius: 12px; font-size: 1.05rem; font-weight: 600; cursor: pointer; width: 100%; transition: transform 0.15s, box-shadow 0.2s; }
+    .save-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,87,184,0.3); }
+    .save-toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); background: #2e7d32; color: white; padding: 12px 24px; border-radius: 10px; font-size: 0.95rem; z-index: 1000; transition: transform 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+    .save-toast.show { transform: translateX(-50%) translateY(0); }
+    .hidden-input { display: none; }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <h1>My Profile</h1>
+    <p><a href="recognition.html">&larr; Back to Recognition Wall</a></p>
+  </header>
+
+  <div class="container">
+    <div class="profile-section">
+      <div class="avatar-section">
+        <div class="avatar-preview" id="avatarPreview">?</div>
+        <label class="avatar-upload-btn">
+          📷 Upload Photo
+          <input type="file" class="hidden-input" accept="image/*" onchange="handleAvatarUpload(event)">
+        </label>
+      </div>
+
+      <h2>About Me</h2>
+      <div class="form-group">
+        <label for="displayName">Name</label>
+        <input type="text" id="displayName" readonly>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="birthday">Birthday (Month/Day)</label>
+          <input type="text" id="birthday" placeholder="e.g. March 15">
+        </div>
+        <div class="form-group">
+          <label for="pronouns">Pronouns</label>
+          <input type="text" id="pronouns" placeholder="e.g. she/her, he/him, they/them">
+        </div>
+      </div>
+    </div>
+
+    <div class="profile-section">
+      <h2>Fun Facts</h2>
+      <div class="form-group">
+        <label>Holidays I Celebrate</label>
+        <div class="tag-input-wrap" id="holidaysWrap">
+          <input type="text" class="tag-input" id="holidaysInput" placeholder="Type and press Enter...">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Favorite Snacks</label>
+        <div class="tag-input-wrap" id="snacksWrap">
+          <input type="text" class="tag-input" id="snacksInput" placeholder="Type and press Enter...">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Hobbies & Interests</label>
+        <div class="tag-input-wrap" id="hobbiesWrap">
+          <input type="text" class="tag-input" id="hobbiesInput" placeholder="Type and press Enter...">
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="funFact">Something People Might Not Know About Me</label>
+        <textarea id="funFact" placeholder="Share something fun or interesting..."></textarea>
+      </div>
+      <div class="form-group">
+        <label for="favDrink">Go-To Coffee/Drink Order</label>
+        <input type="text" id="favDrink" placeholder="e.g. Iced oat milk latte">
+      </div>
+      <div class="form-group">
+      </div>
+    </div>
+
+    <button class="save-btn" onclick="saveProfile()">💾 Save Profile</button>
+  </div>
+
+  <div id="saveToast" class="save-toast">✅ Profile saved!</div>
+
+  <script>
+    const SP_SITE = 'https://chartercom.sharepoint.com/sites/DPInsights';
+    const SP_API = SP_SITE + '/_api/web/lists';
+
+    async function spFetch(url, options = {}) {
+      const digestRes = await fetch(SP_SITE + '/_api/contextinfo', {
+        method: 'POST', headers: { 'Accept': 'application/json;odata=verbose' }, credentials: 'include'
+      });
+      const digest = (await digestRes.json()).d.GetContextWebInformation.FormDigestValue;
+      const defaults = {
+        credentials: 'include',
+        headers: {
+          'Accept': 'application/json;odata=verbose',
+          'Content-Type': 'application/json;odata=verbose',
+          'X-RequestDigest': digest,
+          ...options.headers
+        }
+      };
+      return fetch(url, { ...defaults, ...options, headers: { ...defaults.headers, ...(options.headers || {}) } });
+    }
+
+    async function spGetItems(listName, filter) {
+      const f = filter ? "&$filter=" + encodeURIComponent(filter) : '';
+      const res = await fetch(
+        SP_API + "/getbytitle('" + listName + "')/items?$top=5000" + f,
+        { credentials: 'include', headers: { 'Accept': 'application/json;odata=verbose' } }
+      );
+      return (await res.json()).d.results;
+    }
+
+    async function spAddItem(listName, fields) {
+      const typeRes = await fetch(
+        SP_API + "/getbytitle('" + listName + "')?$select=ListItemEntityTypeFullName",
+        { credentials: 'include', headers: { 'Accept': 'application/json;odata=verbose' } }
+      );
+      const typeName = (await typeRes.json()).d.ListItemEntityTypeFullName;
+      return spFetch(
+        SP_API + "/getbytitle('" + listName + "')/items",
+        { method: 'POST', body: JSON.stringify({ '__metadata': { 'type': typeName }, ...fields }) }
+      );
+    }
+
+    async function spUpdateItem(listName, id, fields) {
+      const typeRes = await fetch(
+        SP_API + "/getbytitle('" + listName + "')?$select=ListItemEntityTypeFullName",
+        { credentials: 'include', headers: { 'Accept': 'application/json;odata=verbose' } }
+      );
+      const typeName = (await typeRes.json()).d.ListItemEntityTypeFullName;
+      return spFetch(
+        SP_API + "/getbytitle('" + listName + "')/items(" + id + ")",
+        { method: 'POST', body: JSON.stringify({ '__metadata': { 'type': typeName }, ...fields }),
+          headers: { 'IF-MATCH': '*', 'X-HTTP-Method': 'MERGE' } }
+      );
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const userName = params.get('name') || '';
+    const PROFILE_KEY = 'profile_' + userName;
+
+    // Tag input helper
+    function setupTagInput(wrapId, inputId, dataKey) {
+      const wrap = document.getElementById(wrapId);
+      const input = document.getElementById(inputId);
+      let tags = [];
+
+      function render() {
+        wrap.querySelectorAll('.tag').forEach(t => t.remove());
+        tags.forEach((tag, i) => {
+          const el = document.createElement('span');
+          el.className = 'tag';
+          el.innerHTML = tag + ' <button onclick="removeTag(\'' + dataKey + '\',' + i + ')">&times;</button>';
+          wrap.insertBefore(el, input);
+        });
+      }
+
+      input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && this.value.trim()) {
+          e.preventDefault();
+          tags.push(this.value.trim());
+          this.value = '';
+          render();
+        }
+        if (e.key === 'Backspace' && !this.value && tags.length) {
+          tags.pop();
+          render();
+        }
+      });
+
+      wrap.addEventListener('click', () => input.focus());
+
+      window['getTags_' + dataKey] = () => tags;
+      window['setTags_' + dataKey] = (t) => { tags = t || []; render(); };
+      window.removeTag = window.removeTag || function(key, i) {
+        window['getTags_' + key]().splice(i, 1);
+        window['setTags_' + key](window['getTags_' + key]());
+      };
+    }
+
+    setupTagInput('holidaysWrap', 'holidaysInput', 'holidays');
+    setupTagInput('snacksWrap', 'snacksInput', 'snacks');
+    setupTagInput('hobbiesWrap', 'hobbiesInput', 'hobbies');
+
+    // Load profile
+    let profileItemId = null;
+
+    async function loadProfile() {
+      document.getElementById('displayName').value = userName;
+      try {
+        const items = await spGetItems('Profiles', "PersonName eq '" + userName.replace(/'/g, "''") + "'");
+        const profile = items.length > 0 ? items[0] : {};
+        if (items.length > 0) profileItemId = items[0].Id;
+
+        const parse = (v) => { try { return JSON.parse(v); } catch(e) { return []; } };
+
+        document.getElementById('birthday').value = profile.Birthday || '';
+        document.getElementById('pronouns').value = profile.Pronouns || '';
+        document.getElementById('funFact').value = profile.FunFact || '';
+        document.getElementById('favDrink').value = profile.FavDrink || '';
+
+        window.setTags_holidays(parse(profile.Holidays));
+        window.setTags_snacks(parse(profile.Snacks));
+        window.setTags_hobbies(parse(profile.Hobbies));
+
+        const avatar = document.getElementById('avatarPreview');
+        if (profile.AvatarUrl) {
+          avatar.innerHTML = '<img src="' + profile.AvatarUrl + '" alt="Avatar">';
+        } else if (userName) {
+          avatar.textContent = userName.split(' ').map(w => w[0]).join('').toUpperCase();
+        }
+      } catch(e) {
+        console.warn('Failed to load profile from SharePoint:', e);
+      }
+    }
+
+    function handleAvatarUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      if (file.size > 500 * 1024) {
+        if (!confirm('This photo is over 500KB. Large photos use more storage. Continue?')) {
+          event.target.value = '';
+          return;
+        }
+      }
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const avatar = document.getElementById('avatarPreview');
+        avatar.innerHTML = '<img src="' + e.target.result + '" alt="Avatar">';
+        // Store temporarily
+        avatar.dataset.url = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function saveProfile() {
+      const avatar = document.getElementById('avatarPreview');
+      const fields = {
+        PersonName: userName,
+        Birthday: document.getElementById('birthday').value.trim(),
+        Pronouns: document.getElementById('pronouns').value.trim(),
+        FunFact: document.getElementById('funFact').value.trim(),
+        FavDrink: document.getElementById('favDrink').value.trim(),
+        Holidays: JSON.stringify(window.getTags_holidays()),
+        Snacks: JSON.stringify(window.getTags_snacks()),
+        Hobbies: JSON.stringify(window.getTags_hobbies()),
+        AvatarUrl: avatar.dataset.url || ''
+      };
+      try {
+        if (profileItemId) {
+          await spUpdateItem('Profiles', profileItemId, fields);
+        } else {
+          await spAddItem('Profiles', fields);
+        }
+        const toast = document.getElementById('saveToast');
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2500);
+      } catch(e) {
+        alert('Failed to save profile. Check your connection and try again.');
+        console.error(e);
+      }
+    }
+
+    if (!userName) {
+      document.querySelector('.container').innerHTML = '<div class="profile-section" style="text-align:center;padding:40px;"><h2>No name selected</h2><p style="margin-top:12px;color:#666;">Please select your name on the <a href="recognition.html" style="color:#0057b8;">Recognition Wall</a> first.</p></div>';
+    } else {
+      loadProfile();
+    }
+    // Make save button call async
+    document.querySelector('.save-btn').onclick = function(e) { e.preventDefault(); saveProfile(); };
+  </script>
+</body>
+</html>
