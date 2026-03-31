@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Team Recognition Wall</title>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #02193d; color: #1a1a2e; min-height: 100vh; }
@@ -508,140 +510,54 @@
   </footer>
 
   <script>
-    // === SharePoint API Configuration ===
-    const SP_SITE = 'https://chartercom.sharepoint.com/sites/DPInsights';
-    const SP_API = SP_SITE + '/_api/web/lists';
+    // === Firebase Configuration ===
+    const firebaseConfig = {
+      apiKey: "AIzaSyBTkkuVJC-y6TlubeuMxeHUrrSesUHZWSg",
+      authDomain: "recognition-2026.firebaseapp.com",
+      projectId: "recognition-2026",
+      storageBucket: "recognition-2026.firebasestorage.app",
+      messagingSenderId: "811110918184",
+      appId: "1:811110918184:web:f95f670a1f01fe28de6d1d"
+    };
 
-    async function spFetch(url, options = {}) {
-      const digestRes = await fetch(SP_SITE + '/_api/contextinfo', {
-        method: 'POST', headers: { 'Accept': 'application/json;odata=verbose' }, credentials: 'include'
-      });
-      const digest = (await digestRes.json()).d.GetContextWebInformation.FormDigestValue;
-      const defaults = {
-        credentials: 'include',
-        headers: {
-          'Accept': 'application/json;odata=verbose',
-          'Content-Type': 'application/json;odata=verbose',
-          'X-RequestDigest': digest,
-          ...options.headers
-        }
-      };
-      return fetch(url, { ...defaults, ...options, headers: { ...defaults.headers, ...(options.headers || {}) } });
-    }
+    // Firebase is loaded via CDN scripts in <head>
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
-    // --- SharePoint CRUD helpers ---
-    async function spGetItems(listName, orderBy) {
-      const order = orderBy ? '&$orderby=' + orderBy : '';
-      const res = await fetch(
-        SP_API + "/getbytitle('" + listName + "')/items?$top=5000" + order,
-        { credentials: 'include', headers: { 'Accept': 'application/json;odata=verbose' } }
-      );
-      const data = await res.json();
-      return data.d.results;
-    }
-
-    async function spAddItem(listName, fields) {
-      const meta = { '__metadata': { 'type': await spGetListItemType(listName) } };
-      const res = await spFetch(
-        SP_API + "/getbytitle('" + listName + "')/items",
-        { method: 'POST', body: JSON.stringify({ ...meta, ...fields }) }
-      );
-      return res.json();
-    }
-
-    async function spUpdateItem(listName, id, fields) {
-      const meta = { '__metadata': { 'type': await spGetListItemType(listName) } };
-      return spFetch(
-        SP_API + "/getbytitle('" + listName + "')/items(" + id + ")",
-        { method: 'POST', body: JSON.stringify({ ...meta, ...fields }),
-          headers: { 'IF-MATCH': '*', 'X-HTTP-Method': 'MERGE' } }
-      );
-    }
-
-    const _listTypes = {};
-    async function spGetListItemType(listName) {
-      if (_listTypes[listName]) return _listTypes[listName];
-      const res = await fetch(
-        SP_API + "/getbytitle('" + listName + "')?$select=ListItemEntityTypeFullName",
-        { credentials: 'include', headers: { 'Accept': 'application/json;odata=verbose' } }
-      );
-      const data = await res.json();
-      _listTypes[listName] = data.d.ListItemEntityTypeFullName;
-      return _listTypes[listName];
-    }
-
-    // --- Data conversion helpers ---
-    function spItemToRecognition(item) {
-      let cats = item.Category || '';
-      try { cats = JSON.parse(cats); } catch(e) { cats = cats ? [cats] : []; }
-      return {
-        id: item.Id,
-        from: item.From || item.OData__x0046_rom || '',
-        to: item.To || item.OData__x0054_o || '',
-        category: cats,
-        message: item.Message || '',
-        image: item.ImageUrl || null,
-        likes: item.Likes || 0,
-        tab: item.Tab || 'work',
-        comments: [],
-        createdAt: new Date(item.Created).getTime(),
-        time: ''
-      };
-    }
-
-    function spItemToProfile(item) {
-      const parse = (v) => { try { return JSON.parse(v); } catch(e) { return []; } };
-      return {
-        id: item.Id,
-        personName: item.PersonName || '',
-        birthday: item.Birthday || '',
-        pronouns: item.Pronouns || '',
-        favDrink: item.FavDrink || '',
-        snacks: parse(item.Snacks),
-        hobbies: parse(item.Hobbies),
-        holidays: parse(item.Holidays),
-        funFact: item.FunFact || '',
-        avatarUrl: item.AvatarUrl || ''
-      };
-    }
-
-    // --- Global data (loaded from SharePoint) ---
+    // --- Global data ---
     let recognitions = [];
     let lifeRecognitions = [];
     let allProfiles = {};
-    let allComments = {};
 
     async function loadAllData() {
       try {
         // Load recognitions
-        const items = await spGetItems('Recognitions', 'Created desc');
-        const allRecs = items.map(spItemToRecognition);
-        recognitions = allRecs.filter(r => r.tab === 'work');
+        const recSnap = await db.collection('recognitions').orderBy('createdAt', 'desc').get();
+        const allRecs = recSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        recognitions = allRecs.filter(r => (r.tab || 'work') === 'work');
         lifeRecognitions = allRecs.filter(r => r.tab === 'life');
 
-        // Load comments
-        const comments = await spGetItems('Comments');
-        allComments = {};
-        comments.forEach(c => {
-          const pid = c.PostId;
-          if (!allComments[pid]) allComments[pid] = [];
-          allComments[pid].push({ from: c.From || c.OData__x0046_rom || '', text: c.CommentText || '' });
+        // Load comments and attach
+        const comSnap = await db.collection('comments').get();
+        const commentsByPost = {};
+        comSnap.docs.forEach(doc => {
+          const c = doc.data();
+          if (!commentsByPost[c.postId]) commentsByPost[c.postId] = [];
+          commentsByPost[c.postId].push({ from: c.from, text: c.text });
         });
-        // Attach comments to recognitions
         [...recognitions, ...lifeRecognitions].forEach(r => {
-          r.comments = allComments[r.id] || [];
+          r.comments = commentsByPost[r.id] || [];
         });
 
         // Load profiles
-        const profiles = await spGetItems('Profiles');
+        const profSnap = await db.collection('profiles').get();
         allProfiles = {};
-        profiles.forEach(p => {
-          const prof = spItemToProfile(p);
-          allProfiles[prof.personName] = prof;
+        profSnap.docs.forEach(doc => {
+          const p = doc.data();
+          allProfiles[p.personName] = p;
         });
       } catch(e) {
-        console.warn('SharePoint load failed, using localStorage fallback:', e);
-        // Fallback to localStorage if SharePoint is unavailable
+        console.error('Firebase load failed:', e);
         return false;
       }
       return true;
@@ -650,6 +566,7 @@
     function getProfile(name) {
       return allProfiles[name] || {};
     }
+
 
     // --- Tab switching ---
     function switchTab(tab) {
@@ -903,7 +820,7 @@
       const newMsg = textarea.value.trim();
       if (newMsg) {
         recognitions[index].message = newMsg;
-        if (recognitions[index].id) await spUpdateItem('Recognitions', recognitions[index].id, { Message: newMsg });
+        if (recognitions[index].id) await db.collection('recognitions').doc(recognitions[index].id).update({ message: newMsg });
       }
       renderFeed();
     }
@@ -924,7 +841,7 @@
       const rec = recognitions[index];
       if (btn.classList.contains('liked')) { rec.likes++; } else { rec.likes--; }
       span.textContent = rec.likes;
-      if (rec.id) await spUpdateItem('Recognitions', rec.id, { Likes: rec.likes });
+      if (rec.id) await db.collection('recognitions').doc(rec.id).update({ likes: rec.likes });
     }
 
     function toggleComments(index) {
@@ -940,7 +857,7 @@
       const fromCustom = document.getElementById('fromNameCustom');
       const fromName = (fromSelect.value === '__custom__' ? fromCustom.value.trim() : fromSelect.value) || 'Anonymous';
       const postId = recognitions[index].id;
-      await spAddItem('Comments', { PostId: postId, From: fromName, CommentText: text });
+      await db.collection('comments').add({ postId: postId, from: fromName, text: text });
       await loadAllData();
       input.value = '';
       renderFeed();
@@ -1324,7 +1241,7 @@
       if (btn.classList.contains('liked')) lifeRecognitions[index].likes++;
       else lifeRecognitions[index].likes--;
       span.textContent = lifeRecognitions[index].likes;
-      if (lifeRecognitions[index].id) spUpdateItem('Recognitions', lifeRecognitions[index].id, { Likes: lifeRecognitions[index].likes });
+      if (lifeRecognitions[index].id) db.collection('recognitions').doc(lifeRecognitions[index].id).update({ likes: lifeRecognitions[index].likes });
     }
 
     function startLifeEdit(index) {
@@ -1333,7 +1250,7 @@
     }
     async function saveLifeEdit(index) {
       const v = document.getElementById('lifeEditArea-' + index).value.trim();
-      if (v) { lifeRecognitions[index].message = v; if (lifeRecognitions[index].id) await spUpdateItem('Recognitions', lifeRecognitions[index].id, { Message: v }); }
+      if (v) { lifeRecognitions[index].message = v; if (lifeRecognitions[index].id) await db.collection('recognitions').doc(lifeRecognitions[index].id).update({ message: v }); }
       renderLifeFeed();
     }
 
@@ -1344,11 +1261,12 @@
         alert('Please fill in your name, at least one category, and a message.');
         return;
       }
-      await spAddItem('Recognitions', {
-        From: from, To: '',
-        Category: JSON.stringify([...lifeSelectedCategories]),
-        Message: message, ImageUrl: lifeSelectedMedia || '',
-        Likes: 0, Tab: 'life'
+      await db.collection('recognitions').add({
+        from: from, to: '',
+        category: [...lifeSelectedCategories],
+        message: message, image: lifeSelectedMedia || '',
+        likes: 0, tab: 'life',
+        createdAt: Date.now()
       });
       await loadAllData();
       lifeSelectedCategories = [];
