@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Team Recognition Wall</title>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #02193d; color: #1a1a2e; min-height: 100vh; }
+
+    .header { background: linear-gradient(135deg, #1c77e0, #05073e); color: white; padding: 24px; text-align: center; }
+    .header h1 { font-size: 1.8rem; margin-bottom: 4px; }
+    .header p { opacity: 0.9; font-size: 0.95rem; }
+
+    .container { max-width: 1500px; margin: 10px auto; padding: 0 16px; display: flex; gap: 16px; align-items: flex-start; }
+
+    /* Left column: sticky profile */
+    .profile-column { width: 350px; flex-shrink: 0; position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow-y: auto; }
+
+    /* Center column: feed */
+    .feed-column { flex: 1; min-width: 0px; max-width: 950px; }
+
+    /* Right column: sticky form */
+    .form-column { width: 500px; flex-shrink: 0; position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow-y: auto; }
+
+    /* Recognition Form */
+    .recognition-form { background: #ffffff; border-radius: 16px; padding: 28px; margin-bottom: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.3); border: 1px solid #d0dce8; }
+    .recognition-form h2 { font-size: 1.3rem; margin-bottom: 20px; color: #0057b8; text-align: center; }
+
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 6px; color: #0057b8; text-transform: uppercase; letter-spacing: 0.3px; }
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%; padding: 11px 14px; border: 1.5px solid #c0d0e0; border-radius: 10px;
+      font-size: 0.95rem; font-family: inherit; transition: border-color 0.2s, box-shadow 0.2s;
+      background: #ffffff; color: #1a1a2e;
+    }
+    .form-group input::placeholder, .form-group textarea::placeholder { color: #9ab; }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+      outline: none; border-color: #00a3e0; box-shadow: 0 0 0 3px rgba(0,163,224,0.15); background: #ffffff;
+    }
+    .form-group textarea { resize: vertical; min-height: 90px; }
+    .form-group select { appearance: none; background-color: #ffffff; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%230057b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; cursor: pointer; color: #1a1a2e; }
+    .form-group select option { background: #ffffff; color: #1a1a2e; }
+
+    .form-row { display: flex; flex-direction: column; gap: 0; }
+    .form-row .form-group { flex: 1; }
+
+    .form-divider { height: 1px; background: #d0dce8; margin: 18px 0; }
+
+    .media-section { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; }
+    .media-btn { padding: 9px 16px; border: 1.5px dashed #c0d0e0; border-radius: 10px; background: #f5f8fc; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; transition: all 0.2s; flex: 1; justify-content: center; color: #0057b8; }
+    .media-btn:hover { background: #e8f4fd; border-color: #00a3e0; border-style: solid; color: #0057b8; }
+
+    .media-preview { margin-bottom: 14px; position: relative; display: none; text-align: center; background: #f5f8fc; border-radius: 10px; padding: 12px; }
+    .media-preview img { max-width: 100%; max-height: 200px; border-radius: 8px; }
+    .media-preview .remove-media { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: 14px; line-height: 28px; transition: background 0.2s; }
+    .media-preview .remove-media:hover { background: rgba(229,57,53,0.8); }
+
+    .gif-search { display: none; margin-bottom: 14px; }
+    .gif-search input { width: 100%; padding: 10px 14px; border: 1.5px solid #c0d0e0; border-radius: 10px; font-size: 0.9rem; background: #ffffff; color: #1a1a2e; }
+    .gif-search input::placeholder { color: #9ab; }
+    .gif-search input:focus { outline: none; border-color: #00a3e0; box-shadow: 0 0 0 3px rgba(0,163,224,0.15); }
+    .gif-results { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; max-height: 200px; overflow-y: auto; padding: 4px; }
+    .gif-results img { width: 120px; height: 90px; object-fit: cover; border-radius: 8px; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; border: 2px solid transparent; }
+    .gif-results img:hover { transform: scale(1.05); border-color: #00a3e0; box-shadow: 0 2px 8px rgba(0,163,224,0.3); }
+
+    .submit-btn { background: linear-gradient(135deg, #0057b8, #00a3e0); color: white; border: none; padding: 14px 24px; border-radius: 12px; font-size: 1.05rem; font-weight: 600; cursor: pointer; width: 100%; transition: transform 0.15s, box-shadow 0.2s; letter-spacing: 0.3px; }
+    .submit-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,87,184,0.3); }
+    .submit-btn:active { transform: translateY(0); }
+
+    .success-toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); background: #2e7d32; color: white; padding: 12px 24px; border-radius: 10px; font-size: 0.95rem; font-weight: 500; z-index: 1000; transition: transform 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+    .success-toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* Recognition Feed */
+    .feed-header { font-size: 1.1rem; font-weight: 600; color: #ffffff; margin-bottom: 12px; }
+
+    .recognition-card { background: #ffffff; border-radius: 12px; padding: 20px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); border: 1px solid #d0dce8; }
+    .card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .avatar { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 1.1rem; flex-shrink: 0; }
+    .card-meta h3 { font-size: 0.95rem; color: #1a1a2e; }
+    .card-meta h3 .recognizee { color: #0057b8; }
+    .card-meta .timestamp { font-size: 0.8rem; color: #888; }
+    .card-category { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 600; margin-left: 6px; white-space: nowrap; vertical-align: middle; }
+
+    .card-message { font-size: 0.95rem; line-height: 1.5; margin-bottom: 12px; color: #333; }
+    .card-image { width: 100%; border-radius: 8px; margin-bottom: 12px; max-height: 300px; object-fit: cover; }
+
+    .card-actions { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 12px; border-top: 1px solid #e0e8f0; align-items: center; }
+    .action-btn { background: none; border: none; cursor: pointer; font-size: 0.85rem; color: #666; display: flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 6px; transition: background 0.2s; }
+    .action-btn:hover { background: #e8f4fd; color: #0057b8; }
+    .action-btn.liked { color: #e53935; }
+    .edit-btn { background: none; border: none; cursor: pointer; font-size: 0.85rem; color: #999; padding: 2px 6px; border-radius: 6px; transition: color 0.2s; position: absolute; top: 16px; right: 16px; }
+    .edit-btn:hover { color: #0057b8; }
+    .card-edit-textarea { width: 100%; padding: 10px 12px; border: 1.5px solid #00a3e0; border-radius: 10px; font-size: 0.95rem; font-family: inherit; min-height: 80px; resize: vertical; margin-bottom: 8px; }
+    .card-edit-actions { display: flex; gap: 8px; margin-bottom: 12px; }
+    .card-edit-actions button { padding: 6px 16px; border-radius: 8px; font-size: 0.82rem; cursor: pointer; font-weight: 600; }
+    .card-edit-save { background: #0057b8; color: white; border: none; }
+    .card-edit-cancel { background: none; border: 1px solid #c0d0e0; color: #666; }
+    .recognition-card { position: relative; }
+
+    .comments-section { margin-top: 12px; padding-top: 12px; border-top: 1px solid #e0e8f0; display: none; }
+    .comment { display: flex; gap: 8px; margin-bottom: 10px; }
+    .comment-avatar { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; color: white; flex-shrink: 0; }
+    .comment-body { background: #f0f5fa; padding: 8px 12px; border-radius: 12px; font-size: 0.85rem; color: #333; }
+    .comment-body strong { font-size: 0.8rem; color: #1a1a2e; }
+    .comment-input-row { display: flex; gap: 8px; margin-top: 8px; }
+    .comment-input-row input { flex: 1; padding: 8px 12px; border: 1px solid #c0d0e0; border-radius: 20px; font-size: 0.85rem; background: #ffffff; color: #1a1a2e; }
+    .comment-input-row input::placeholder { color: #9ab; }
+    .comment-input-row button { padding: 8px 16px; background: #0057b8; color: white; border: none; border-radius: 20px; font-size: 0.85rem; cursor: pointer; }
+
+    .hidden-input { display: none; }
+    .custom-input { width: 100%; padding: 11px 14px; border: 1.5px solid #00a3e0; border-radius: 10px; font-size: 0.95rem; font-family: inherit; background: #ffffff; color: #1a1a2e; }
+    .custom-input::placeholder { color: #9ab; }
+    .to-tags-wrap { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 12px; border: 1.5px solid #c0d0e0; border-radius: 10px; min-height: 44px; align-items: center; background: #fff; cursor: text; }
+    .to-tags-wrap:focus-within { border-color: #00a3e0; box-shadow: 0 0 0 3px rgba(0,163,224,0.15); }
+    .to-tag { display: inline-flex; align-items: center; gap: 4px; background: rgba(0,87,184,0.1); color: #0057b8; padding: 3px 10px; border-radius: 20px; font-size: 0.82rem; }
+    .to-tag button { background: none; border: none; color: #0057b8; cursor: pointer; font-size: 0.9rem; padding: 0 2px; }
+
+    .toolbar { display: flex; gap: 8px; justify-content: center; align-items: center; padding: 16px; }
+    .toolbar-btn { padding: 6px 14px; border: 1px solid #1a3a5c; border-radius: 8px; background: #0a1f3d; cursor: pointer; font-size: 0.8rem; color: #8ab4e8; transition: background 0.2s; }
+    .toolbar-btn:hover { background: #112e52; border-color: #00a3e0; color: #ffffff; }
+    .toolbar-btn.danger { color: #e57373; }
+    .toolbar-btn.danger:hover { background: rgba(229,57,53,0.15); border-color: #e53935; }
+    .data-status { font-size: 0.75rem; color: #5a7da8; padding: 4px 8px; }
+
+    /* Footer with data tools */
+    .page-footer { background: #010f24; border-top: 1px solid #1a3a5c; margin-top: 24px; padding: 16px 0; }
+
+    @media (max-width: 1100px) {
+      .container { flex-direction: column; }
+      .profile-column { width: 100%; position: static; max-height: none; }
+      .form-column { width: 100%; position: static; max-height: none; }
+      .feed-column { max-width: 100%; }
+    }
+
+    /* Profile Card */
+    .profile-card { background: #ffffff; border-radius: 16px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); border: 1px solid #d0dce8; text-align: center; }
+    .profile-card .profile-avatar { width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 1.5rem; margin: 0 auto 10px; }
+    .profile-card .profile-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+    .profile-select { width: 100%; padding: 8px 12px; border: 1.5px solid #c0d0e0; border-radius: 10px; font-size: 0.9rem; font-family: inherit; background: #fff; color: #1a1a2e; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%230057b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; cursor: pointer; margin-bottom: 8px; text-align: center; font-weight: 600; }
+    .profile-select:focus { outline: none; border-color: #00a3e0; box-shadow: 0 0 0 3px rgba(0,163,224,0.15); }
+    .profile-card .profile-name { font-size: 1rem; font-weight: 600; color: #1a1a2e; margin-bottom: 2px; }
+    .profile-card .profile-stats { display: flex; justify-content: center; gap: 20px; margin-bottom: 12px; font-size: 0.8rem; color: #555; }
+    .profile-card .profile-stats span { display: flex; flex-direction: column; align-items: center; }
+    .profile-card .profile-stats strong { font-size: 1.1rem; color: #0057b8; }
+    .profile-link { display: inline-block; padding: 8px 20px; background: linear-gradient(135deg, #0057b8, #00a3e0); color: white; border-radius: 10px; font-size: 0.85rem; font-weight: 600; text-decoration: none; transition: transform 0.15s, box-shadow 0.2s; }
+    .profile-link:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,87,184,0.3); }
+    .profile-details { margin-top: 14px; text-align: left; }
+    .profile-detail-item { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 10px; font-size: 0.82rem; color: #555; }
+    .profile-detail-item .detail-icon { flex-shrink: 0; font-size: 1rem; }
+    .profile-detail-item .detail-label { font-weight: 600; color: #0057b8; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.3px; }
+    .profile-detail-item .detail-value { color: #333; }
+    .profile-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
+    .profile-tag { background: rgba(0,87,184,0.1); color: #0057b8; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; }
+
+    /* Tabs */
+    .tab-bar { display: flex; justify-content: center; gap: 0; background: #0a1f3d; border-bottom: 2px solid #1a3a5c; }
+    .tab-btn { padding: 14px 28px; background: none; border: none; color: #8ab4e8; font-size: 0.92rem; font-weight: 600; cursor: pointer; transition: color 0.2s, border-bottom 0.2s; border-bottom: 3px solid transparent; margin-bottom: -2px; }
+    .tab-btn:hover { color: #ffffff; }
+    .tab-btn.active { color: #ffffff; border-bottom-color: #00a3e0; }
+    .tab-content { display: none; }
+    .tab-content.active { display: flex; }
+    .tab-page { display: none; }
+    .tab-page.active { display: block; }
+    .tab-placeholder { max-width: 700px; margin: 60px auto; text-align: center; color: #8ab4e8; }
+    .tab-placeholder h2 { font-size: 1.3rem; margin-bottom: 8px; color: #ffffff; }
+    .tab-placeholder p { font-size: 0.9rem; opacity: 0.7; }
+
+    /* About the Team grid */
+    .team-grid { max-width: 1400px; margin: 24px auto; padding: 0 16px; display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; }
+    .team-member-card { background: #ffffff; border-radius: 16px; padding: 20px; width: 280px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); border: 1px solid #d0dce8; text-align: center; }
+    .team-member-card .member-avatar { width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 1.5rem; margin: 0 auto 10px; overflow: hidden; }
+    .team-member-card .member-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .team-member-card .member-name { font-size: 1rem; font-weight: 600; color: #1a1a2e; margin-bottom: 12px; }
+    .team-member-card .member-detail { text-align: left; margin-bottom: 8px; font-size: 0.82rem; }
+    .team-member-card .member-detail-label { font-weight: 600; color: #0057b8; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 2px; }
+    .team-member-card .member-detail-value { color: #333; min-height: 1.2em; }
+    .team-member-card .member-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; min-height: 1.2em; }
+    .team-member-card .member-tag { background: rgba(0,87,184,0.1); color: #0057b8; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; }
+    .team-member-card .member-edit { display: inline-block; margin-top: 12px; padding: 6px 16px; background: linear-gradient(135deg, #0057b8, #00a3e0); color: white; border-radius: 8px; font-size: 0.8rem; font-weight: 600; text-decoration: none; }
+    .team-member-card .member-edit:hover { box-shadow: 0 4px 12px rgba(0,87,184,0.3); }
+
+  </style>
+</head>
+<body>
+  <header class="header">
+    <h1> The Space </h1>
+    <p>An inclusive space where the team can celebrate each other's accomplishments!</p>
+  </header>
+
+  <nav class="tab-bar">
+    <button class="tab-btn" onclick="switchTab('about')" id="tab-about">About the Team</button>
+    <button class="tab-btn active" onclick="switchTab('work')" id="tab-work">Work Announcements</button>
+    <button class="tab-btn" onclick="switchTab('life')" id="tab-life">Life Announcements</button>
+    <button class="tab-btn" onclick="switchTab('resources')" id="tab-resources">Team Resources</button>
+  </nav>
+
+  <!-- About the Team -->
+  <div class="tab-page" id="page-about">
+    <div class="tab-placeholder" style="margin-bottom:0;">
+      <h2>👥 About the Team</h2>
+      <p>Get to know your teammates</p>
+    </div>
+    <div class="team-grid" id="teamGrid"></div>
+  </div>
+
+  <!-- Work Announcements (existing recognition wall) -->
+  <div class="tab-page active" id="page-work">
+  <div class="container">
+    <!-- Left: Sticky Profile -->
+    <div class="profile-column">
+      <div class="profile-card" id="profileCard">
+        <div class="profile-avatar" id="profileAvatar" style="background: #0057b8;">?</div>
+        <select id="profileSelect" class="profile-select">
+          <option value="" disabled selected>Select your name...</option>
+          <option value="Balamurugan Natarajan">Balamurugan Natarajan</option>
+          <option value="Corbin Weaver">Corbin Weaver</option>
+          <option value="Hattie Duke">Hattie Duke</option>
+          <option value="Ivan Sarmiento">Ivan Sarmiento</option>
+          <option value="Lavanya Cheruku">Lavanya Cheruku</option>
+          <option value="Logan Nichols">Logan Nichols</option>
+          <option value="Malia Jones">Malia Jones</option>
+          <option value="Nirali Patel">Nirali Patel</option>
+          <option value="Peter Siemsen">Peter Siemsen</option>
+          <option value="Rodrigo Navarro Morales">Rodrigo Navarro Morales</option>
+          <option value="Ryan Ward">Ryan Ward</option>
+          <option value="Sanjeevkumar Senthil">Sanjeevkumar Senthil</option>
+          <option value="Shihan Shaheed">Shihan Shaheed</option>
+          <option value="Summit Modi">Summit Modi</option>
+          <option value="Val Turcin">Val Turcin</option>
+          <option value="Vamsi Krishna Rallabhandi">Vamsi Krishna Rallabhandi</option>
+        </select>
+        <div class="profile-stats">
+          <span><strong id="statGiven">0</strong> Given</span>
+          <span><strong id="statReceived">0</strong> Received</span>
+        </div>
+        <div class="profile-details" id="profileDetails"></div>
+        <a href="profile.html" class="profile-link">Edit Profile</a>
+      </div>
+    </div>
+
+    <!-- Center: Feed -->
+    <div class="feed-column">
+      <div class="feed-header">Recent Posts</div>
+      <div id="feed"></div>
+    </div>
+
+    <!-- Right: Sticky Form -->
+    <div class="form-column">
+      <div class="recognition-form">
+      <h2>Recognize & Appreciate ✨</h2>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="fromName">Your Name</label>
+          <select id="fromName">
+          <option value="" disabled selected>Your Name</option>
+              <option value="Balamurugan Natarajan">Balamurugan Natarajan</option>
+              <option value="Corbin Weaver">Corbin Weaver</option>
+              <option value="Hattie Duke">Hattie Duke</option>
+              <option value="Ivan Sarmiento">Ivan Sarmiento</option>
+              <option value="Lavanya Cheruku">Lavanya Cheruku</option>
+              <option value="Logan Nichols">Logan Nichols</option>
+              <option value="Malia Jones">Malia Jones</option>
+              <option value="Nirali Patel">Nirali Patel</option>
+              <option value="Peter Siemsen">Peter Siemsen</option>
+              <option value="Rodrigo Navarro Morales">Rodrigo Navarro Morales</option>
+              <option value="Ryan Ward">Ryan Ward</option>
+              <option value="Sanjeevkumar Senthil">Sanjeevkumar Senthil</option>
+              <option value="Shihan Shaheed">Shihan Shaheed</option>
+              <option value="Summit Modi">Summit Modi</option>
+              <option value="Val Turcin">Val Turcin</option>
+              <option value="Vamsi Krishna Rallabhandi">Vamsi Krishna Rallabhandi</option>
+            <optgroup label="—">
+              <option value="__custom__">Someone else (type below)</option>
+            </optgroup>
+           </select>
+           <input type="text" id="fromNameCustom" class="custom-input" placeholder="Type your name..." style="display:none; margin-top:8px;">
+        </div>
+        <div class="form-group">
+          <label>Recognizing</label>
+          <div class="to-tags-wrap" id="toTagsWrap">
+            <select id="toNameAdd" style="border:none;outline:none;font-size:0.85rem;background:transparent;color:#1a1a2e;flex:1;min-width:140px;padding:4px 0;cursor:pointer;">
+              <option value="" disabled selected>Add a person...</option>
+              <option value="Balamurugan Natarajan">Balamurugan Natarajan</option>
+              <option value="Corbin Weaver">Corbin Weaver</option>
+              <option value="Hattie Duke">Hattie Duke</option>
+              <option value="Ivan Sarmiento">Ivan Sarmiento</option>
+              <option value="Lavanya Cheruku">Lavanya Cheruku</option>
+              <option value="Logan Nichols">Logan Nichols</option>
+              <option value="Malia Jones">Malia Jones</option>
+              <option value="Nirali Patel">Nirali Patel</option>
+              <option value="Peter Siemsen">Peter Siemsen</option>
+              <option value="Rodrigo Navarro Morales">Rodrigo Navarro Morales</option>
+              <option value="Ryan Ward">Ryan Ward</option>
+              <option value="Sanjeevkumar Senthil">Sanjeevkumar Senthil</option>
+              <option value="Shihan Shaheed">Shihan Shaheed</option>
+              <option value="Summit Modi">Summit Modi</option>
+              <option value="Val Turcin">Val Turcin</option>
+              <option value="Vamsi Krishna Rallabhandi">Vamsi Krishna Rallabhandi</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Recognition Category</label>
+        <div class="to-tags-wrap" id="catTagsWrap">
+          <select id="catAdd" style="border:none;outline:none;font-size:0.85rem;background:transparent;color:#1a1a2e;flex:1;min-width:140px;padding:4px 0;cursor:pointer;">
+            <option value="" disabled selected>Add a category...</option>
+            <option value="Adaptability">Adaptability</option>
+            <option value="Takes Initiative">Takes Initiative</option>
+            <option value="Builds High Performing Teams">Builds High Performing Teams</option>
+            <option value="Communicates Effectively">Communicates Effectively</option>
+            <option value="Conflict Management">Conflict Management</option>
+            <option value="Continuously Improves">Continuously Improves</option>
+            <option value="Leads By Example">Leads By Example</option>
+            <option value="Delivers Results">Delivers Results</option>
+            <option value="Motivates Others">Motivates Others</option>
+            <option value="Seeks Challenge">Seeks Challenge</option>
+            <option value="Plans & Organizes">Plans &amp; Organizes</option>
+            <option value="Accountability">Accountability</option>
+            <option value="Improved Stakeholder Rapport">Improved Stakeholder Rapport</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-divider"></div>
+
+      <div class="form-group">
+        <label for="message">Your Message</label>
+        <textarea id="message" placeholder="Share what they did and why it matters..."></textarea>
+      </div>
+
+      <div class="media-section">
+        <button class="media-btn" onclick="document.getElementById('photoInput').click()">📷 Add Photo</button>
+        <button class="media-btn" id="gifToggle" onclick="toggleGifSearch()">🎬 Add GIF</button>
+        <input type="file" id="photoInput" class="hidden-input" accept="image/*" onchange="handlePhotoUpload(event)">
+      </div>
+
+      <div class="media-preview" id="mediaPreview">
+        <img id="previewImg" src="" alt="Preview">
+        <button class="remove-media" onclick="removeMedia()">✕</button>
+      </div>
+
+      <div class="gif-search" id="gifSearch">
+        <input type="text" id="gifQuery" placeholder="Search for a GIF..." oninput="searchGifs(this.value)">
+        <div class="gif-results" id="gifResults"></div>
+      </div>
+
+      <button class="submit-btn" onclick="submitRecognition()">🎉 Post Recognition</button>
+    </div>
+    </div><!-- end form-column -->
+
+    <div id="successToast" class="success-toast">✅ Recognition posted!</div>
+  </div><!-- end container -->
+  </div><!-- end page-work -->
+
+  <!-- Life Announcements -->
+  <div class="tab-page" id="page-life">
+  <div class="container">
+    <!-- Left: Sticky Profile -->
+    <div class="profile-column">
+      <div class="profile-card" id="lifeProfileCard">
+        <div class="profile-avatar" id="lifeProfileAvatar" style="background: #0057b8;">?</div>
+        <select id="lifeProfileSelect" class="profile-select">
+          <option value="" disabled selected>Select your name...</option>
+          <option value="Balamurugan Natarajan">Balamurugan Natarajan</option>
+          <option value="Corbin Weaver">Corbin Weaver</option>
+          <option value="Hattie Duke">Hattie Duke</option>
+          <option value="Ivan Sarmiento">Ivan Sarmiento</option>
+          <option value="Lavanya Cheruku">Lavanya Cheruku</option>
+          <option value="Logan Nichols">Logan Nichols</option>
+          <option value="Malia Jones">Malia Jones</option>
+          <option value="Nirali Patel">Nirali Patel</option>
+          <option value="Peter Siemsen">Peter Siemsen</option>
+          <option value="Rodrigo Navarro Morales">Rodrigo Navarro Morales</option>
+          <option value="Ryan Ward">Ryan Ward</option>
+          <option value="Sanjeevkumar Senthil">Sanjeevkumar Senthil</option>
+          <option value="Shihan Shaheed">Shihan Shaheed</option>
+          <option value="Summit Modi">Summit Modi</option>
+          <option value="Val Turcin">Val Turcin</option>
+          <option value="Vamsi Krishna Rallabhandi">Vamsi Krishna Rallabhandi</option>
+        </select>
+        <div class="profile-details" id="lifeProfileDetails"></div>
+        <a href="profile.html" class="profile-link" id="lifeProfileLink">Edit Profile</a>
+      </div>
+    </div>
+
+    <!-- Center: Feed -->
+    <div class="feed-column">
+      <div class="feed-header">Recent Posts</div>
+      <div id="lifeFeed"></div>
+    </div>
+
+    <!-- Right: Sticky Form -->
+    <div class="form-column">
+      <div class="recognition-form">
+        <h2>Share a Life Update 🎉</h2>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Your Name</label>
+            <select id="lifeFromName">
+              <option value="" disabled selected>Your Name</option>
+              <option value="Balamurugan Natarajan">Balamurugan Natarajan</option>
+              <option value="Corbin Weaver">Corbin Weaver</option>
+              <option value="Hattie Duke">Hattie Duke</option>
+              <option value="Ivan Sarmiento">Ivan Sarmiento</option>
+              <option value="Lavanya Cheruku">Lavanya Cheruku</option>
+              <option value="Logan Nichols">Logan Nichols</option>
+              <option value="Malia Jones">Malia Jones</option>
+              <option value="Nirali Patel">Nirali Patel</option>
+              <option value="Peter Siemsen">Peter Siemsen</option>
+              <option value="Rodrigo Navarro Morales">Rodrigo Navarro Morales</option>
+              <option value="Ryan Ward">Ryan Ward</option>
+              <option value="Sanjeevkumar Senthil">Sanjeevkumar Senthil</option>
+              <option value="Shihan Shaheed">Shihan Shaheed</option>
+              <option value="Summit Modi">Summit Modi</option>
+              <option value="Val Turcin">Val Turcin</option>
+              <option value="Vamsi Krishna Rallabhandi">Vamsi Krishna Rallabhandi</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Category</label>
+          <div class="to-tags-wrap" id="lifeCatTagsWrap">
+            <select id="lifeCatAdd" style="border:none;outline:none;font-size:0.85rem;background:transparent;color:#1a1a2e;flex:1;min-width:140px;padding:4px 0;cursor:pointer;">
+              <option value="" disabled selected>Add a category...</option>
+              <option value="Birthday">Birthday</option>
+              <option value="Wedding">Wedding</option>
+              <option value="New Baby">New Baby</option>
+              <option value="New Pet">New Pet</option>
+              <option value="New Home">New Home</option>
+              <option value="Graduation">Graduation</option>
+              <option value="Travel">Travel</option>
+              <option value="Health & Wellness">Health &amp; Wellness</option>
+              <option value="Holiday">Holiday</option>
+              <option value="Just Because">Just Because</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-divider"></div>
+        <div class="form-group">
+          <label for="lifeMessage">Your Message</label>
+          <textarea id="lifeMessage" placeholder="Share your life update..."></textarea>
+        </div>
+        <div class="media-section">
+          <button class="media-btn" onclick="document.getElementById('lifePhotoInput').click()">📷 Add Photo</button>
+          <input type="file" id="lifePhotoInput" class="hidden-input" accept="image/*" onchange="handleLifePhoto(event)">
+        </div>
+        <div class="media-preview" id="lifeMediaPreview">
+          <img id="lifePreviewImg" src="" alt="Preview">
+          <button class="remove-media" onclick="removeLifeMedia()">✕</button>
+        </div>
+        <button class="submit-btn" onclick="submitLifePost()">🎉 Post Update</button>
+      </div>
+    </div>
+
+    <div id="lifeSuccessToast" class="success-toast">✅ Life update posted!</div>
+  </div>
+  </div>
+
+  <!-- Team Resources -->
+  <div class="tab-page" id="page-resources">
+    <div class="tab-placeholder">
+      <h2>📚 Team Resources</h2>
+      <p>Shared links, documents, and tools for the team.</p>
+    </div>
+    <div style="max-width:700px;margin:0 auto 40px;padding:0 16px;display:flex;flex-wrap:wrap;gap:16px;justify-content:center;">
+      <a href="https://open.spotify.com/playlist/0QcD54HxsSFohDgjqeuz97?si=f440daba88504ce1&pt=5625d5d16e38d056dfc6bbc5502a8695" target="_blank" style="flex:1;min-width:280px;background:#fff;border-radius:16px;padding:24px;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,0.2);border:1px solid #d0dce8;text-align:center;transition:transform 0.15s;">
+        <div style="font-size:2rem;margin-bottom:8px;">🎵</div>
+        <div style="font-size:1rem;font-weight:600;color:#0057b8;">Team Playlist</div>
+        <div style="font-size:0.8rem;color:#888;margin-top:4px;">Spotify</div>
+      </a>
+      <a href="https://www.nih.gov/health-information/your-healthiest-self-wellness-toolkits/physical-wellness-toolkit/physical-wellness-toolkit-more-resources" target="_blank" style="flex:1;min-width:280px;background:#fff;border-radius:16px;padding:24px;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,0.2);border:1px solid #d0dce8;text-align:center;transition:transform 0.15s;">
+        <div style="font-size:2rem;margin-bottom:8px;">💪</div>
+        <div style="font-size:1rem;font-weight:600;color:#0057b8;">Physical Health Resources</div>
+        <div style="font-size:0.8rem;color:#888;margin-top:4px;">NIH Wellness Toolkit</div>
+      </a>
+      <a href="https://www.mentalhealthcolorado.org/resources/get-help/" target="_blank" style="flex:1;min-width:280px;background:#fff;border-radius:16px;padding:24px;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,0.2);border:1px solid #d0dce8;text-align:center;transition:transform 0.15s;">
+        <div style="font-size:2rem;margin-bottom:8px;">🧠</div>
+        <div style="font-size:1rem;font-weight:600;color:#0057b8;">Mental Health Resources</div>
+        <div style="font-size:0.8rem;color:#888;margin-top:4px;">Mental Health Colorado</div>
+      </a>
+      <a href="https://corporate.charter.com/newsroom" target="_blank" style="flex:1;min-width:280px;background:#fff;border-radius:16px;padding:24px;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,0.2);border:1px solid #d0dce8;text-align:center;transition:transform 0.15s;">
+        <div style="font-size:2rem;margin-bottom:8px;">📰</div>
+        <div style="font-size:1rem;font-weight:600;color:#0057b8;">Charter Newsletter</div>
+        <div style="font-size:0.8rem;color:#888;margin-top:4px;">Corporate Newsroom</div>
+      </a>
+      <a href="https://panorama.charter.com/policies" target="_blank" style="flex:1;min-width:280px;background:#fff;border-radius:16px;padding:24px;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,0.2);border:1px solid #d0dce8;text-align:center;transition:transform 0.15s;">
+        <div style="font-size:2rem;margin-bottom:8px;">📋</div>
+        <div style="font-size:1rem;font-weight:600;color:#0057b8;">Policy Information Resources</div>
+        <div style="font-size:0.8rem;color:#888;margin-top:4px;">Panorama</div>
+      </a>
+      <a href="https://panorama.charter.com/humanresources" target="_blank" style="flex:1;min-width:280px;background:#fff;border-radius:16px;padding:24px;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,0.2);border:1px solid #d0dce8;text-align:center;transition:transform 0.15s;">
+        <div style="font-size:2rem;margin-bottom:8px;">👥</div>
+        <div style="font-size:1rem;font-weight:600;color:#0057b8;">Human Resources</div>
+        <div style="font-size:0.8rem;color:#888;margin-top:4px;">Panorama</div>
+      </a>
+    </div>
+  </div>
+
+  <footer class="page-footer">
+    <div class="toolbar">
+      <span class="data-status" id="dataStatus"></span>
+      <button class="toolbar-btn" onclick="exportData()">📥 Export</button>
+      <label class="toolbar-btn" style="margin:0">📤 Import <input type="file" class="hidden-input" accept=".json" onchange="importData(event)"></label>
+      <button class="toolbar-btn danger" onclick="clearAllData()">🗑 Clear All</button>
+    </div>
+  </footer>
+
+  <script>
+    // === Firebase Configuration ===
+    const firebaseConfig = {
+      apiKey: "AIzaSyBTkkuVJC-y6TlubeuMxeHUrrSesUHZWSg",
+      authDomain: "recognition-2026.firebaseapp.com",
+      projectId: "recognition-2026",
+      storageBucket: "recognition-2026.firebasestorage.app",
+      messagingSenderId: "811110918184",
+      appId: "1:811110918184:web:f95f670a1f01fe28de6d1d"
+    };
+
+    // Firebase is loaded via CDN scripts in <head>
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // --- Global data ---
+    let recognitions = [];
+    let lifeRecognitions = [];
+    let allProfiles = {};
+
+    async function loadAllData() {
+      try {
+        // Load recognitions
+        const recSnap = await db.collection('recognitions').orderBy('createdAt', 'desc').get();
+        const allRecs = recSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        recognitions = allRecs.filter(r => (r.tab || 'work') === 'work');
+        lifeRecognitions = allRecs.filter(r => r.tab === 'life');
+
+        // Load comments and attach
+        const comSnap = await db.collection('comments').get();
+        const commentsByPost = {};
+        comSnap.docs.forEach(doc => {
+          const c = doc.data();
+          if (!commentsByPost[c.postId]) commentsByPost[c.postId] = [];
+          commentsByPost[c.postId].push({ from: c.from, text: c.text });
+        });
+        [...recognitions, ...lifeRecognitions].forEach(r => {
+          r.comments = commentsByPost[r.id] || [];
+        });
+
+        // Load profiles
+        const profSnap = await db.collection('profiles').get();
+        allProfiles = {};
+        profSnap.docs.forEach(doc => {
+          const p = doc.data();
+          allProfiles[p.personName] = p;
+        });
+      } catch(e) {
+        console.error('Firebase load failed:', e);
+        return false;
+      }
+      return true;
+    }
+
+    function getProfile(name) {
+      return allProfiles[name] || {};
+    }
+
+
+    // --- Tab switching ---
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
+      document.getElementById('tab-' + tab).classList.add('active');
+      document.getElementById('page-' + tab).classList.add('active');
+      // Sync profile name across tabs
+      const savedName = localStorage.getItem('recognition_wall_username');
+      if (savedName) {
+        ['profileSelect','lifeProfileSelect'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) { const m = Array.from(el.options).find(o => o.value === savedName); if (m) el.value = savedName; }
+        });
+        ['fromName','lifeFromName'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) { const m = Array.from(el.options).find(o => o.value === savedName); if (m) el.value = savedName; }
+        });
+        if (typeof updateProfileCard === 'function') updateProfileCard();
+        if (typeof updateLifeProfileCard === 'function') updateLifeProfileCard();
+        if (typeof renderLifeFeed === 'function') renderLifeFeed();
+        if (typeof renderTeamGrid === 'function') renderTeamGrid();
+      }
+    }
+
+    const STORAGE_KEY = 'recognition_wall_data';
+    let selectedMediaUrl = null;
+    const avatarColors = ['#0057b8','#00a3e0','#e53935','#43a047','#fb8c00','#8e24aa','#00897b','#d81b60'];
+
+    // Default seed data (used only on first visit)
+    const defaultData = [
+      // === Corbin ===
+      { from: 'Malia Jones', to: 'Corbin Weaver', type: 'individual', category: 'Leads By Example', message: "I always appreciate that you take the time to check in with the team even outside of work just like how life is going. I also value your leadership so much. I think half of enjoying work is who you are working for. You lead with determination and take time to better yourself (constant growth mindset) which not only improves yourself but significantly improves the team too. Your hard work does NOT go unnoticed!! :)", image: null, likes: 0, comments: [], time: '1d ago', createdAt: Date.now() - 86400000 },
+      { from: 'Rodrigo Navarro Morales', to: 'Corbin Weaver', type: 'individual', category: 'Motivates Others', message: "Supportive vibe. Great help to get things done.", image: null, likes: 0, comments: [], time: '2d ago', createdAt: Date.now() - 172800000 },
+      { from: 'Logan Nichols', to: 'Corbin Weaver', type: 'individual', category: 'Builds High Performing Teams', message: "How people oriented you are - its helpful to have someone who helps constantly reminding me about the human aspect.", image: null, likes: 0, comments: [], time: '3d ago', createdAt: Date.now() - 259200000 },
+      { from: 'Ivan Sarmiento', to: 'Corbin Weaver', type: 'individual', category: 'Takes Initiative', message: "Great leader qualities. Cares for the team, not only on the work side, but also the personal one. Always available to help and support.", image: null, likes: 0, comments: [], time: '3d ago', createdAt: Date.now() - 262800000 },
+      { from: 'Nirali Patel', to: 'Corbin Weaver', type: 'individual', category: 'Builds High Performing Teams', message: "You always have your team's back and lead by example. I feel like even at your busiest, you're like a mama bird looking out for everyone and making sure we're feeling supported, finding us help when we need it and creating opportunities for us to work on things we're interested in. Also love that you really care about a work/life balance and allow a lot of flexibility", image: null, likes: 0, comments: [], time: '3d ago', createdAt: Date.now() - 259200000 },
+      { from: 'Peter Siemsen', to: 'Corbin Weaver', type: 'individual', category: 'Leads By Example', message: "I really admire Corbins ability to stay involved with what everyone is working on and taking the time to be present for each person.", image: null, likes: 0, comments: [], time: '3d ago', createdAt: Date.now() - 262800000 },
+
+      // === Vamsi ===
+      { from: 'Rodrigo Navarro Morales', to: 'Vamsi Krishna Rallabhandi', type: 'individual', category: 'Communicates Effectively', message: "Great attitude. Good disposition to collaborate.", image: null, likes: 0, comments: [], time: '1d ago', createdAt: Date.now() - 93600000 },
+      { from: 'Hattie Duke', to: 'Vamsi Krishna Rallabhandi', type: 'individual', category: 'Delivers Results', message: "You are always willing to help and always question data which makes our reporting better! You go beyond what is asked!", image: null, likes: 0, comments: [], time: '2d ago', createdAt: Date.now() - 180000000 },
+      { from: 'Logan Nichols', to: 'Vamsi Krishna Rallabhandi', type: 'individual', category: 'Motivates Others', message: "Your sense of humour.... horse tinder XD", image: null, likes: 0, comments: [], time: '2d ago', createdAt: Date.now() - 183600000 },
+      { from: 'Malia Jones', to: 'Vamsi Krishna Rallabhandi', type: 'individual', category: 'Continuously Improves', message: "I appreciate your curiosity and creativity when it comes to AI initiatives. You put a positive spin on concerns and that is the kind of energy we need right now.", image: null, likes: 0, comments: [], time: '3d ago', createdAt: Date.now() - 270000000 },
+      { from: 'Nirali Patel', to: 'Vamsi Krishna Rallabhandi', type: 'individual', category: 'Seeks Challenge', message: "Appreciate your curiousity for learning new things and your sense of humor that can lighten up any boring call.", image: null, likes: 0, comments: [], time: '3d ago', createdAt: Date.now() - 273600000 },
+
+      // === Logan ===
+      { from: 'Peter Siemsen', to: 'Logan Nichols', type: 'individual', category: 'Delivers Results', message: "I appreciate Logans big brain and how he's almost always able to answer any Tableau questions I throw at him.", image: null, likes: 0, comments: [], time: '1d ago', createdAt: Date.now() - 97200000 },
+      { from: 'Logan Nichols', to: 'Logan Nichols', type: 'individual', category: 'Adaptability', message: "Appreciate your calm energy - seems like you aren't fazed by anything.", image: null, likes: 0, comments: [], time: '2d ago', createdAt: Date.now() - 187200000 },
+      { from: 'Rodrigo Navarro Morales', to: 'Logan Nichols', type: 'individual', category: 'Communicates Effectively', message: "Communication style. Overall knowledge and skills.", image: null, likes: 0, comments: [], time: '3d ago', createdAt: Date.now() - 277200000 },
+      { from: 'Ivan Sarmiento', to: 'Logan Nichols', type: 'individual', category: 'Continuously Improves', message: "Really appreciate how you take the time to explain everything and make sure it is 100% understood. Also really supportive.", image: null, likes: 0, comments: [], time: '3d ago', createdAt: Date.now() - 280800000 },
+
+      // === Malia ===
+      { from: 'Peter Siemsen', to: 'Malia Jones', type: 'individual', category: 'Leads By Example', message: "Malia is always positive and empathetic, and authentically cares about each person on the team (personally and professionally).", image: null, likes: 0, comments: [], time: '1d ago', createdAt: Date.now() - 100800000 },
+      { from: 'Malia Jones', to: 'Malia Jones', type: 'individual', category: 'Communicates Effectively', message: "I appreciate your organization and willingness to help out whenever you see a sticking point in various processes. I also appreciate your light-hearted nature and willingness to just have a conversation (in and outside of work). You are super easy to talk to which makes for a more inclusive environment. That's an invaluable skill!!\n\nYou are always super supportive and go out of your way to help in any ways you can. I also appreciate our conversations about just life stuff too! It keeps it light and makes me feel seen in the workplace :)", image: null, likes: 0, comments: [], time: '1d ago', createdAt: Date.now() - 104400000 },
+      { from: 'Logan Nichols', to: 'Malia Jones', type: 'individual', category: 'Motivates Others', message: "Down to earth attitude - the most relatable manager Ive ever had :)\n\nYour consistency and your perspective... I have learned so much about indian culture from you.", image: null, likes: 0, comments: [], time: '2d ago', createdAt: Date.now() - 190800000 },
+      { from: 'Ivan Sarmiento', to: 'Malia Jones', type: 'individual', category: 'Builds High Performing Teams', message: "Very supportive and helpful with every task.", image: null, likes: 0, comments: [], time: '2d ago', createdAt: Date.now() - 194400000 },
+      { from: 'Nirali Patel', to: 'Malia Jones', type: 'individual', category: 'Communicates Effectively', message: "Appreciate your willingness to jump in and help out whenever I have a tagging or SQL question.", image: null, likes: 0, comments: [], time: '3d ago', createdAt: Date.now() - 284400000 },
+      { from: 'Hattie Duke', to: 'Malia Jones', type: 'individual', category: 'Accountability', message: "I appreciate your organization and all the amazing documentation you put together. I would be lost without you. I just getting to know you as a person too!\n\nI appreciate the way you take time to show me how to think through SQL Queries and Tableau views. Instead of just showing me - you make me think the why and the how. You've taught me a lot! Thank you :) I also enjoy chatting about your house work too. You've been a good friend!", image: null, likes: 0, comments: [], time: '3d ago', createdAt: Date.now() - 291600000 },
+
+      // === Hattie ===
+      { from: 'Nirali Patel', to: 'Hattie Duke', type: 'individual', category: 'Leads By Example', message: "Hattie is always positive, giggly, and willing to help! She's the front of our tagging efforts, works with the devs/PMs the most, and smiles through it all (even though most of the time it hurts on the inside). You always have your team's back and lead by example. I feel like even at your busiest, you're like a mama bird looking out for everyone and making sure we're feeling supported, finding us help when we need it and creating opportunities for us to work on things we're interested in. Also love that you really care about a work/life balance and allow a lot of flexibility.", image: null, likes: 0, comments: [], time: '1d ago', createdAt: Date.now() - 104400000 },
+      { from: 'Malia Jones', to: 'Hattie Duke', type: 'individual', category: 'Motivates Others', message: "I appreciate your gentle spirit. You go above and beyond to support others and show up. You are always so nice to talk to and take time to get to know others.", image: null, likes: 0, comments: [], time: '2d ago', createdAt: Date.now() - 198000000 },
+      { from: 'Logan Nichols', to: 'Hattie Duke', type: 'individual', category: 'Builds High Performing Teams', message: "Have been a very supportive friend while I've been here at Charter - I know I can always come to you to chat and complain about anything, work or personal related.", image: null, likes: 0, comments: [], time: '3d ago', createdAt: Date.now() - 298800000 },
+      { from: 'Hattie Duke', to: 'Hattie Duke', type: 'individual', category: 'Communicates Effectively', message: "I appreciate your communication. I always know when I need to validate in stage or production or if there was an ETL issue that our team needs to know about!", image: null, likes: 0, comments: [], time: '3d ago', createdAt: Date.now() - 302400000 },
+      { from: 'Rodrigo Navarro Morales', to: 'Hattie Duke', type: 'individual', category: 'Motivates Others', message: "Awesome vibes. How you get the team to hang out outside of work stuff.", image: null, likes: 0, comments: [], time: '3d ago', createdAt: Date.now() - 306000000 },
+
+      // === Peter ===
+      { from: 'Peter Siemsen', to: 'Peter Siemsen', type: 'individual', category: 'Leads By Example', message: "I appreciate how awesome Peter is pretty much all the time, and how humble he can be.", image: null, likes: 0, comments: [], time: '1d ago', createdAt: Date.now() - 108000000 },
+      { from: 'Hattie Duke', to: 'Peter Siemsen', type: 'individual', category: 'Motivates Others', message: "I appreciate that you always make me laugh - especially in pictionary-related sprint retro games. You are very kind and I can see all the hard work you put in every day!", image: null, likes: 0, comments: [], time: '2d ago', createdAt: Date.now() - 201600000 },
+      { from: 'Rodrigo Navarro Morales', to: 'Peter Siemsen', type: 'individual', category: 'Communicates Effectively', message: "Great attitude. Willingness to share knowledge. A positive disposition for collaboration.", image: null, likes: 0, comments: [], time: '3d ago', createdAt: Date.now() - 309600000 },
+      { from: 'Nirali Patel', to: 'Peter Siemsen', type: 'individual', category: 'Delivers Results', message: "We don't work together too often, but I know you're always handling so many testing tickets and communicating with the offshore team and I think that's amazing. I'd love to learn more about what you do someday! I also love your sense of humor that always shows in team-building games.", image: null, likes: 0, comments: [], time: '3d ago', createdAt: Date.now() - 313200000 },
+
+      // === Ivan ===
+      { from: 'Peter Siemsen', to: 'Ivan Sarmiento', type: 'individual', category: 'Takes Initiative', message: "I appreciate Ivan's desire to learn all this new stuff quickly and get up to speed! Very impressive.", image: null, likes: 0, comments: [], time: '1d ago', createdAt: Date.now() - 111600000 },
+      { from: 'Malia Jones', to: 'Ivan Sarmiento', type: 'individual', category: 'Continuously Improves', message: "You are always very kind and I appreciate the energy you bring to the team. You take time to know the people you work with. And you are a great mentor and leader. Your knowledge is valuable but the way you carry yourself is invaluable - that is something people can't really teach you. You are a positive presence on the team which does not go unnoticed! :)", image: null, likes: 0, comments: [], time: '2d ago', createdAt: Date.now() - 205200000 },
+      { from: 'Ivan Sarmiento', to: 'Ivan Sarmiento', type: 'individual', category: 'Communicates Effectively', message: "I appreciate that you explain everything very well and are open to discuss.", image: null, likes: 0, comments: [], time: '3d ago', createdAt: Date.now() - 316800000 },
+
+      // === Rodrigo ===
+      { from: 'Logan Nichols', to: 'Rodrigo Navarro Morales', type: 'individual', category: 'Delivers Results', message: "I feel like Rodrigo just knows all the things when it comes to ETL... that man is a guru. And the calm energy is always welcome.", image: null, likes: 0, comments: [], time: '1d ago', createdAt: Date.now() - 115200000 },
+      { from: 'Peter Siemsen', to: 'Rodrigo Navarro Morales', type: 'individual', category: 'Motivates Others', message: "Rodrigos quiet and subtle humor cracks me up. His one-liners or jokes are great lol.", image: null, likes: 0, comments: [], time: '2d ago', createdAt: Date.now() - 208800000 },
+      { from: 'Nirali Patel', to: 'Rodrigo Navarro Morales', type: 'individual', category: 'Communicates Effectively', message: "Love how much you care so much about everyone on the team and put in the work to create a supportive and inclusive workplace environment for us all. Also appreciate the great jokes and memes always.", image: null, likes: 0, comments: [], time: '2d ago', createdAt: Date.now() - 212400000 },
+      { from: 'Malia Jones', to: 'Rodrigo Navarro Morales', type: 'individual', category: 'Builds High Performing Teams', message: "I appreciate your humor and your ability to keep it light. You take time to learn about me and my life which makes work less mundane. I feel like I can always confide in you regardless of what issues I may be having with work lol.", image: null, likes: 0, comments: [], time: '3d ago', createdAt: Date.now() - 320400000 },
+      { from: 'Ivan Sarmiento', to: 'Rodrigo Navarro Morales', type: 'individual', category: 'Leads By Example', message: "Great leader qualities. Cares for the team, not only on the work side, but also the personal one. Always available to help and support.", image: null, likes: 0, comments: [], time: '3d ago', createdAt: Date.now() - 324000000 },
+
+      // === Val ===
+      { from: 'Hattie Duke', to: 'Val Turcin', type: 'individual', category: 'Leads By Example', message: "I appreciate you giving allowing me to lead tagging and trusting me with that. You can handle being pulled many ways and know how to prioritize everything and make sure everyone/all items are on track. You are very supportive and understanding of work life balance.", image: null, likes: 0, comments: [], time: '1d ago', createdAt: Date.now() - 118800000 },
+      { from: 'Nirali Patel', to: 'Val Turcin', type: 'individual', category: 'Adaptability', message: "You have a calming energy and I never feel like any situation is too stressful when we're working together. I also admire your patience and willingness to help.", image: null, likes: 0, comments: [], time: '2d ago', createdAt: Date.now() - 216000000 },
+      { from: 'Malia Jones', to: 'Val Turcin', type: 'individual', category: 'Continuously Improves', message: "You go above and beyond to learn about various things. You have a great attitude and are patient with yourself and others especially when the work is constantly changing. I appreciate your down to earth attitude and your flexibility with all the tagging work you do. I also appreciate the conversations we have about life outside of work! Its always fun to catch up with you.", image: null, likes: 0, comments: [], time: '2d ago', createdAt: Date.now() - 219600000 },
+      { from: 'Peter Siemsen', to: 'Val Turcin', type: 'individual', category: 'Builds High Performing Teams', message: "As busy as Val is, I really appreciate how open and available he is to help the team, regardless of how trivial the task or on the flip side, how complex some of what he helps with can be.", image: null, likes: 0, comments: [], time: '3d ago', createdAt: Date.now() - 327600000 },
+      { from: 'Rodrigo Navarro Morales', to: 'Val Turcin', type: 'individual', category: 'Communicates Effectively', message: "Good attitude. Communication style.", image: null, likes: 0, comments: [], time: '3d ago', createdAt: Date.now() - 331200000 },
+
+      // === Bala ===
+      { from: 'Peter Siemsen', to: 'Balamurugan Natarajan', type: 'individual', category: 'Continuously Improves', message: "Bala is a wealth of knowledge and I appreciate his wise outlook on work-related tasks, as well as his deep insight into life stuff in our Retros/IDP sessions.", image: null, likes: 0, comments: [], time: '1d ago', createdAt: Date.now() - 122400000 },
+      { from: 'Hattie Duke', to: 'Balamurugan Natarajan', type: 'individual', category: 'Motivates Others', message: "Although we don't interact everyday, you are always willing to help out. I've pinged you for SQL querying help and you are always willing to help others learn and grow!", image: null, likes: 0, comments: [], time: '2d ago', createdAt: Date.now() - 223200000 },
+      { from: 'Rodrigo Navarro Morales', to: 'Balamurugan Natarajan', type: 'individual', category: 'Communicates Effectively', message: "Great attitude. Good disposition to collaborate.", image: null, likes: 0, comments: [], time: '3d ago', createdAt: Date.now() - 334800000 },
+
+      // === Lavanya ===
+      { from: 'Peter Siemsen', to: 'Lavanya Cheruku', type: 'individual', category: 'Continuously Improves', message: "I appreciate Lavanya's willingness to learn and grow as a contributor to the team as responsiblities. I love her innocence during our Retro's and how artistic she is in drawphone.", image: null, likes: 0, comments: [], time: '1d ago', createdAt: Date.now() - 133200000 },
+      { from: 'Hattie Duke', to: 'Lavanya Cheruku', type: 'individual', category: 'Adaptability', message: "I appreciate you always jumping in to help the TM team when you have a lot going on your end! You are very adaptable and such a sweet person! I always leave a conversation with you feeling happier than I was before!\n\nYou are very hardworking and so kind. I would love to work more with you because you have such an expertise!", image: null, likes: 0, comments: [], time: '2d ago', createdAt: Date.now() - 226800000 },
+      { from: 'Rodrigo Navarro Morales', to: 'Lavanya Cheruku', type: 'individual', category: 'Motivates Others', message: "Good vibes. Super supportive.\n\nGood vibes during group meetings.", image: null, likes: 0, comments: [], time: '3d ago', createdAt: Date.now() - 338400000 },
+
+      // === Nirali ===
+      { from: 'Hattie Duke', to: 'Nirali Patel', type: 'individual', category: 'Delivers Results', message: "Nirali is kind, gentle, reliable and so easy to work with, which is such a great energy/person to have on your team. I appreciate all your help with my MR pipeline failures or anything tagging related. You are more than willing to help! I love the passion and curiosity you have for what you do!!\n\nI appreciate how willing you are to jump into new tasks for the first time and doing them like you've been working here for a long time. You are very thorough and a quick learner! I am impressed how much you run on top of it all!", image: null, likes: 0, comments: [], time: '1d ago', createdAt: Date.now() - 136800000 },
+      { from: 'Malia Jones', to: 'Nirali Patel', type: 'individual', category: 'Communicates Effectively', message: "I always appreciate your gentle kindness. You make a point to say hello and acknowledge those around you. You are a great team player!", image: null, likes: 0, comments: [], time: '2d ago', createdAt: Date.now() - 230400000 },
+      { from: 'Rodrigo Navarro Morales', to: 'Nirali Patel', type: 'individual', category: 'Motivates Others', message: "Good vibes during group meetings.", image: null, likes: 0, comments: [], time: '3d ago', createdAt: Date.now() - 345600000 },
+      { from: 'Nirali Patel', to: 'Nirali Patel', type: 'individual', category: 'Adaptability', message: "You have such a positive energy and I can tell you give your all into anything that you do. I always appreciated how you helped me get onboarded on TM tagging tickets so it felt less overwhelming.", image: null, likes: 0, comments: [], time: '3d ago', createdAt: Date.now() - 349200000 }
+    ];
+
+    // --- Persistence ---
+    function saveRecognitions() { /* saved via SharePoint on each action */ }
+    function updateDataStatus() {
+      const el = document.getElementById('dataStatus');
+      if (el) el.textContent = recognitions.length + ' work posts · ' + lifeRecognitions.length + ' life posts (SharePoint)';
+    }
+
+    // --- Export / Import ---
+    function exportData() {
+      const blob = new Blob([JSON.stringify(recognitions, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `recognition-wall-${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function importData(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const imported = JSON.parse(e.target.result);
+          if (!Array.isArray(imported)) throw new Error('Invalid format');
+          if (!confirm(`Import ${imported.length} recognitions? This will replace your current data.`)) return;
+          recognitions.length = 0;
+          recognitions.push(...imported);
+          saveRecognitions();
+          renderFeed();
+        } catch (err) {
+          alert('Invalid file format. Please use a JSON file exported from this app.');
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+
+    function clearAllData() {
+      if (!confirm('Delete all recognitions? This cannot be undone.')) return;
+      recognitions.length = 0;
+      saveRecognitions();
+      renderFeed();
+    }
+
+    // --- Time formatting ---
+    function timeAgo(timestamp) {
+      if (!timestamp) return '';
+      const diff = Date.now() - timestamp;
+      const mins = Math.floor(diff / 60000);
+      if (mins < 1) return 'Just now';
+      if (mins < 60) return `${mins}m ago`;
+      const hrs = Math.floor(mins / 60);
+      if (hrs < 24) return `${hrs}h ago`;
+      const days = Math.floor(hrs / 24);
+      if (days < 7) return `${days}d ago`;
+      return new Date(timestamp).toLocaleDateString();
+    }
+
+    // --- Rendering ---
+    function getInitials(name) { return name.split(' ').map(w => w[0]).join('').toUpperCase(); }
+    function getColor(name) { let h = 0; for(let i=0;i<name.length;i++) h = name.charCodeAt(i) + ((h<<5)-h); return avatarColors[Math.abs(h) % avatarColors.length]; }
+
+    const categoryColors = {
+      'Leads By Example': { bg: '#e3f2fd', color: '#1565c0' },
+      'Takes Initiative': { bg: '#fce4ec', color: '#c62828' },
+      'Builds High Performing Teams': { bg: '#e8f5e9', color: '#2e7d32' },
+      'Communicates Effectively': { bg: '#fff3e0', color: '#e65100' },
+      'Conflict Management': { bg: '#f3e5f5', color: '#7b1fa2' },
+      'Continuously Improves': { bg: '#e0f7fa', color: '#00838f' },
+      'Delivers Results': { bg: '#fbe9e7', color: '#bf360c' },
+      'Motivates Others': { bg: '#fff8e1', color: '#f9a825' },
+      'Seeks Challenge': { bg: '#ede7f6', color: '#4527a0' },
+      'Plans & Organizes': { bg: '#e8eaf6', color: '#283593' },
+      'Accountability': { bg: '#efebe9', color: '#4e342e' },
+      'Improved Stakeholder Rapport': { bg: '#e0f2f1', color: '#00695c' },
+      'Adaptability': { bg: '#f1f8e9', color: '#558b2f' },
+    };
+
+    function getCategoryStyle(cat) {
+      const c = categoryColors[cat];
+      if (c) return 'background:' + c.bg + ';color:' + c.color;
+      return 'background:rgba(0,87,184,0.1);color:#0057b8';
+    }
+
+    function getCurrentUser() {
+      const fromSelect = document.getElementById('fromName');
+      const fromCustom = document.getElementById('fromNameCustom');
+      return fromSelect.value === '__custom__' ? fromCustom.value.trim() : fromSelect.value;
+    }
+
+    function renderCard(rec, index) {
+      // Handle category as string or array
+      const cats = Array.isArray(rec.category) ? rec.category : (rec.category ? [rec.category] : []);
+      const categoryHtml = cats.map(c => `<span class="card-category" style="${getCategoryStyle(c)}">${c}</span>`).join(' ');
+      const imageHtml = rec.image ? `<img class="card-image" src="${rec.image}" alt="Recognition media">` : '';
+      const displayTime = rec.createdAt ? timeAgo(rec.createdAt) : rec.time;
+      const currentUser = getCurrentUser();
+      const isOwner = currentUser && rec.from === currentUser;
+      const editBtnHtml = isOwner ? `<button class="edit-btn" onclick="startEdit(${index})" title="Edit post"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.85 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button>` : '';
+      const commentsHtml = rec.comments.map(c => `
+        <div class="comment">
+          <div class="comment-avatar" style="background:${getColor(c.from)}">${getInitials(c.from)}</div>
+          <div class="comment-body"><strong>${c.from}</strong><br>${c.text}</div>
+        </div>`).join('');
+
+      return `
+        <div class="recognition-card" id="card-${index}">
+          ${editBtnHtml}
+          <div class="card-header">
+            <div class="card-meta">
+              <h3>${rec.from} recognized <span class="recognizee">${rec.to}</span></h3>
+              <span class="timestamp">${displayTime}</span>
+            </div>
+          </div>
+          <div class="card-message" id="msg-${index}">${rec.message}</div>
+          ${imageHtml}
+          <div class="card-actions">
+            <button class="action-btn" onclick="toggleLike(this, ${index})">❤️ <span>${rec.likes}</span></button>
+            <button class="action-btn" onclick="toggleComments(${index})">💬 ${rec.comments.length} Comments</button>
+            ${categoryHtml}
+          </div>
+          <div class="comments-section" id="comments-${index}">
+            ${commentsHtml}
+            <div class="comment-input-row">
+              <input type="text" id="commentInput-${index}" placeholder="Write a comment..." onkeydown="if(event.key==='Enter')addComment(${index})">
+              <button onclick="addComment(${index})">Post</button>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function startEdit(index) {
+      const msgEl = document.getElementById('msg-' + index);
+      const current = recognitions[index].message;
+      msgEl.innerHTML = '<textarea class="card-edit-textarea" id="editArea-' + index + '">' + current + '</textarea><div class="card-edit-actions"><button class="card-edit-save" onclick="saveEdit(' + index + ')">Save</button><button class="card-edit-cancel" onclick="cancelEdit(' + index + ')">Cancel</button></div>';
+    }
+
+    async function saveEdit(index) {
+      const textarea = document.getElementById('editArea-' + index);
+      const newMsg = textarea.value.trim();
+      if (newMsg) {
+        recognitions[index].message = newMsg;
+        if (recognitions[index].id) await db.collection('recognitions').doc(recognitions[index].id).update({ message: newMsg });
+      }
+      renderFeed();
+    }
+
+    function cancelEdit(index) {
+      renderFeed();
+    }
+
+    function renderFeed() {
+      document.getElementById('feed').innerHTML = recognitions.map((r, i) => renderCard(r, i)).join('');
+      updateDataStatus();
+    }
+
+    // --- Interactions ---
+    async function toggleLike(btn, index) {
+      btn.classList.toggle('liked');
+      const span = btn.querySelector('span');
+      const rec = recognitions[index];
+      if (btn.classList.contains('liked')) { rec.likes++; } else { rec.likes--; }
+      span.textContent = rec.likes;
+      if (rec.id) await db.collection('recognitions').doc(rec.id).update({ likes: rec.likes });
+    }
+
+    function toggleComments(index) {
+      const section = document.getElementById(`comments-${index}`);
+      section.style.display = section.style.display === 'none' || !section.style.display ? 'block' : 'none';
+    }
+
+    async function addComment(index) {
+      const input = document.getElementById(`commentInput-${index}`);
+      const text = input.value.trim();
+      if (!text) return;
+      const fromSelect = document.getElementById('fromName');
+      const fromCustom = document.getElementById('fromNameCustom');
+      const fromName = (fromSelect.value === '__custom__' ? fromCustom.value.trim() : fromSelect.value) || 'Anonymous';
+      const postId = recognitions[index].id;
+      await db.collection('comments').add({ postId: postId, from: fromName, text: text });
+      await loadAllData();
+      input.value = '';
+      renderFeed();
+    }
+
+    // --- Media ---
+    function handlePhotoUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      // Warn if photo is large (base64 eats localStorage space)
+      if (file.size > 2 * 1024 * 1024) {
+        if (!confirm('This photo is over 2MB. Large photos use more storage. Continue?')) {
+          event.target.value = '';
+          return;
+        }
+      }
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        selectedMediaUrl = e.target.result;
+        document.getElementById('previewImg').src = selectedMediaUrl;
+        document.getElementById('mediaPreview').style.display = 'block';
+        document.getElementById('gifSearch').style.display = 'none';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function toggleGifSearch() {
+      const el = document.getElementById('gifSearch');
+      el.style.display = el.style.display === 'none' || !el.style.display ? 'block' : 'none';
+    }
+
+    const sampleGifs = [
+      'https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif',
+      'https://media.giphy.com/media/3o7abKhOpu0NwenH3O/giphy.gif',
+      'https://media.giphy.com/media/xT0xeJpnrWC3XWblEk/giphy.gif',
+      'https://media.giphy.com/media/26u4cqiYI30juCOGY/giphy.gif',
+      'https://media.giphy.com/media/l0HlHFRbmaZtBRhXG/giphy.gif',
+      'https://media.giphy.com/media/3oz8xAFtqoOUUrsh7W/giphy.gif',
+    ];
+
+    function searchGifs(query) {
+      const container = document.getElementById('gifResults');
+      if (!query) { container.innerHTML = ''; return; }
+      container.innerHTML = sampleGifs.map(url =>
+        `<img src="${url}" alt="GIF" onclick="selectGif('${url}')">`
+      ).join('');
+    }
+
+    function selectGif(url) {
+      selectedMediaUrl = url;
+      document.getElementById('previewImg').src = url;
+      document.getElementById('mediaPreview').style.display = 'block';
+      document.getElementById('gifSearch').style.display = 'none';
+    }
+
+    function removeMedia() {
+      selectedMediaUrl = null;
+      document.getElementById('mediaPreview').style.display = 'none';
+      document.getElementById('photoInput').value = '';
+    }
+
+    // --- Multi-select "Recognizing" ---
+    let selectedRecipients = [];
+    let selectedCategories = [];
+
+    function renderToTags() {
+      const wrap = document.getElementById('toTagsWrap');
+      wrap.querySelectorAll('.to-tag').forEach(t => t.remove());
+      const select = document.getElementById('toNameAdd');
+      selectedRecipients.forEach((name, i) => {
+        const el = document.createElement('span');
+        el.className = 'to-tag';
+        el.innerHTML = name + ' <button onclick="removeRecipient(' + i + ')">&times;</button>';
+        wrap.insertBefore(el, select);
+      });
+    }
+
+    function renderCatTags() {
+      const wrap = document.getElementById('catTagsWrap');
+      wrap.querySelectorAll('.to-tag').forEach(t => t.remove());
+      const select = document.getElementById('catAdd');
+      selectedCategories.forEach((cat, i) => {
+        const el = document.createElement('span');
+        el.className = 'to-tag';
+        el.style.cssText = getCategoryStyle(cat);
+        el.innerHTML = cat + ' <button onclick="removeCategory(' + i + ')" style="color:inherit">&times;</button>';
+        wrap.insertBefore(el, select);
+      });
+    }
+
+    document.getElementById('toNameAdd').addEventListener('change', function() {
+      const name = this.value;
+      if (name && !selectedRecipients.includes(name)) {
+        selectedRecipients.push(name);
+        renderToTags();
+      }
+      this.selectedIndex = 0;
+    });
+
+    document.getElementById('catAdd').addEventListener('change', function() {
+      const cat = this.value;
+      if (cat && !selectedCategories.includes(cat)) {
+        selectedCategories.push(cat);
+        renderCatTags();
+      }
+      this.selectedIndex = 0;
+    });
+
+    function removeRecipient(i) {
+      selectedRecipients.splice(i, 1);
+      renderToTags();
+    }
+
+    function removeCategory(i) {
+      selectedCategories.splice(i, 1);
+      renderCatTags();
+    }
+
+    // --- Submit ---
+    async function submitRecognition() {
+      const fromSelect = document.getElementById('fromName');
+      const fromCustom = document.getElementById('fromNameCustom');
+      const from = fromSelect.value === '__custom__' ? fromCustom.value.trim() : fromSelect.value;
+
+      const message = document.getElementById('message').value.trim();
+
+      if (!from || selectedRecipients.length === 0 || selectedCategories.length === 0 || !message) {
+        alert('Please fill in all fields: your name, at least one person, at least one category, and a message.');
+        return;
+      }
+
+      // Create one post per recipient
+      const now = Date.now();
+      selectedRecipients.forEach((to, i) => {
+        recognitions.unshift({
+          from, to, type: 'individual',
+          category: [...selectedCategories],
+          message,
+          image: selectedMediaUrl,
+          likes: 0, comments: [],
+          time: 'Just now',
+          createdAt: now - i
+        });
+      });
+
+      saveRecognitions();
+
+      // Reset form
+      selectedRecipients = [];
+      selectedCategories = [];
+      renderToTags();
+      renderCatTags();
+      document.getElementById('message').value = '';
+      removeMedia();
+      renderFeed();
+      updateProfileCard();
+
+      // Show success toast
+      const toast = document.getElementById('successToast');
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+
+    // --- Custom dropdown toggles ---
+    document.getElementById('fromName').addEventListener('change', function() {
+      const custom = document.getElementById('fromNameCustom');
+      if (this.value === '__custom__') {
+        custom.style.display = 'block';
+        custom.focus();
+      } else {
+        custom.style.display = 'none';
+        custom.value = '';
+      }
+    });
+
+    // Update profile when name changes
+    document.getElementById('fromName').addEventListener('change', updateProfileCard);
+    document.getElementById('fromNameCustom').addEventListener('input', updateProfileCard);
+
+    // Profile dropdown in sidebar
+    document.getElementById('profileSelect').addEventListener('change', function() {
+      const name = this.value;
+      if (!name) return;
+      localStorage.setItem('recognition_wall_username', name);
+      // Sync the fromName dropdown
+      const fromSelect = document.getElementById('fromName');
+      const match = Array.from(fromSelect.options).find(o => o.value === name);
+      if (match) {
+        fromSelect.value = name;
+        document.getElementById('fromNameCustom').style.display = 'none';
+      }
+      // Sync life tab dropdowns
+      const lifePS = document.getElementById('lifeProfileSelect');
+      const lifeFN = document.getElementById('lifeFromName');
+      if (lifePS) { const m = Array.from(lifePS.options).find(o => o.value === name); if (m) lifePS.value = name; }
+      if (lifeFN) { const m = Array.from(lifeFN.options).find(o => o.value === name); if (m) lifeFN.value = name; }
+      updateProfileCard();
+      if (typeof updateLifeProfileCard === 'function') updateLifeProfileCard();
+    });
+
+    // --- Profile card ---
+    function updateProfileCard() {
+      const fromSelect = document.getElementById('fromName');
+      const fromCustom = document.getElementById('fromNameCustom');
+      const name = fromSelect.value === '__custom__' ? fromCustom.value.trim() : fromSelect.value;
+      if (!name) return;
+
+      const profile = getProfile(name);
+      const avatarEl = document.getElementById('profileAvatar');
+      const detailsEl = document.getElementById('profileDetails');
+      const profileSelect = document.getElementById('profileSelect');
+
+      // Sync profile dropdown
+      const match = Array.from(profileSelect.options).find(o => o.value === name);
+      if (match) profileSelect.value = name;
+
+      if (profile.avatarUrl) {
+        avatarEl.innerHTML = '<img src="' + profile.avatarUrl + '" alt="Avatar">';
+      } else {
+        avatarEl.innerHTML = getInitials(name);
+        avatarEl.style.background = getColor(name);
+      }
+
+      // Count given/received
+      const given = recognitions.filter(r => r.from === name).length;
+      const received = recognitions.filter(r => r.to === name).length;
+      document.getElementById('statGiven').textContent = given;
+      document.getElementById('statReceived').textContent = received;
+
+      // Show profile details
+      let html = '';
+      if (profile.birthday) html += '<div class="profile-detail-item"><span class="detail-icon">🎂</span><div><div class="detail-label">Birthday</div><div class="detail-value">' + profile.birthday + '</div></div></div>';
+      if (profile.pronouns) html += '<div class="profile-detail-item"><span class="detail-icon">💬</span><div><div class="detail-label">Pronouns</div><div class="detail-value">' + profile.pronouns + '</div></div></div>';
+      if (profile.favDrink) html += '<div class="profile-detail-item"><span class="detail-icon">☕</span><div><div class="detail-label">Drink Order</div><div class="detail-value">' + profile.favDrink + '</div></div></div>';
+      if (profile.snacks && profile.snacks.length) html += '<div class="profile-detail-item"><span class="detail-icon">🍿</span><div><div class="detail-label">Fav Snacks</div><div class="profile-tags">' + profile.snacks.map(s => '<span class="profile-tag">' + s + '</span>').join('') + '</div></div></div>';
+      if (profile.hobbies && profile.hobbies.length) html += '<div class="profile-detail-item"><span class="detail-icon">🎯</span><div><div class="detail-label">Hobbies</div><div class="profile-tags">' + profile.hobbies.map(h => '<span class="profile-tag">' + h + '</span>').join('') + '</div></div></div>';
+      if (profile.holidays && profile.holidays.length) html += '<div class="profile-detail-item"><span class="detail-icon">🎉</span><div><div class="detail-label">Holidays</div><div class="profile-tags">' + profile.holidays.map(h => '<span class="profile-tag">' + h + '</span>').join('') + '</div></div></div>';
+      if (profile.funFact) html += '<div class="profile-detail-item"><span class="detail-icon">✨</span><div><div class="detail-label">Fun Fact</div><div class="detail-value">' + profile.funFact + '</div></div></div>';
+      detailsEl.innerHTML = html;
+
+      // Pass name to profile page
+      document.querySelector('.profile-link').href = 'profile.html?name=' + encodeURIComponent(name);
+    }
+
+    // Remember the user's name across sessions
+    const savedName = localStorage.getItem('recognition_wall_username');
+    if (savedName) {
+      const fromSelect = document.getElementById('fromName');
+      const matchingOption = Array.from(fromSelect.options).find(o => o.value === savedName);
+      if (matchingOption) {
+        fromSelect.value = savedName;
+      } else if (savedName) {
+        fromSelect.value = '__custom__';
+        document.getElementById('fromNameCustom').style.display = 'block';
+        document.getElementById('fromNameCustom').value = savedName;
+      }
+    }
+    document.getElementById('fromName').addEventListener('change', function() {
+      if (this.value !== '__custom__') {
+        localStorage.setItem('recognition_wall_username', this.value);
+      }
+    });
+    document.getElementById('fromNameCustom').addEventListener('blur', function() {
+      localStorage.setItem('recognition_wall_username', this.value.trim());
+    });
+
+    // === Life Announcements Tab ===
+    let lifeSelectedMedia = null;
+    let lifeSelectedCategories = [];
+
+    function saveLifeData() { /* saved via SharePoint on each action */ }
+    // lifeRecognitions loaded via loadAllData()
+
+    const lifeCatColors = {
+      'Birthday': { bg: '#fff8e1', color: '#f9a825' },
+      'Wedding': { bg: '#fce4ec', color: '#c62828' },
+      'New Baby': { bg: '#e8f5e9', color: '#2e7d32' },
+      'New Pet': { bg: '#fff3e0', color: '#e65100' },
+      'New Home': { bg: '#e3f2fd', color: '#1565c0' },
+      'Graduation': { bg: '#ede7f6', color: '#4527a0' },
+      'Travel': { bg: '#e0f7fa', color: '#00838f' },
+      'Health & Wellness': { bg: '#f1f8e9', color: '#558b2f' },
+      'Holiday': { bg: '#fbe9e7', color: '#bf360c' },
+      'Just Because': { bg: '#efebe9', color: '#4e342e' },
+    };
+    function getLifeCatStyle(cat) {
+      const c = lifeCatColors[cat];
+      if (c) return 'background:' + c.bg + ';color:' + c.color;
+      return 'background:rgba(0,87,184,0.1);color:#0057b8';
+    }
+
+    function renderLifeCatTags() {
+      const wrap = document.getElementById('lifeCatTagsWrap');
+      wrap.querySelectorAll('.to-tag').forEach(t => t.remove());
+      const select = document.getElementById('lifeCatAdd');
+      lifeSelectedCategories.forEach((cat, i) => {
+        const el = document.createElement('span');
+        el.className = 'to-tag';
+        el.style.cssText = getLifeCatStyle(cat);
+        el.innerHTML = cat + ' <button onclick="removeLifeCat(' + i + ')" style="color:inherit">&times;</button>';
+        wrap.insertBefore(el, select);
+      });
+    }
+    document.getElementById('lifeCatAdd').addEventListener('change', function() {
+      if (this.value && !lifeSelectedCategories.includes(this.value)) {
+        lifeSelectedCategories.push(this.value);
+        renderLifeCatTags();
+      }
+      this.selectedIndex = 0;
+    });
+    function removeLifeCat(i) { lifeSelectedCategories.splice(i, 1); renderLifeCatTags(); }
+
+    function handleLifePhoto(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        lifeSelectedMedia = e.target.result;
+        document.getElementById('lifePreviewImg').src = lifeSelectedMedia;
+        document.getElementById('lifeMediaPreview').style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    }
+    function removeLifeMedia() {
+      lifeSelectedMedia = null;
+      document.getElementById('lifeMediaPreview').style.display = 'none';
+      document.getElementById('lifePhotoInput').value = '';
+    }
+
+    function getLifeUser() { return document.getElementById('lifeFromName').value || ''; }
+
+    function renderLifeCard(rec, index) {
+      const cats = Array.isArray(rec.category) ? rec.category : (rec.category ? [rec.category] : []);
+      const catHtml = cats.map(c => '<span class="card-category" style="' + getLifeCatStyle(c) + '">' + c + '</span>').join(' ');
+      const imageHtml = rec.image ? '<img class="card-image" src="' + rec.image + '" alt="Photo">' : '';
+      const displayTime = rec.createdAt ? timeAgo(rec.createdAt) : rec.time;
+      const isOwner = getLifeUser() && rec.from === getLifeUser();
+      const editBtn = isOwner ? '<button class="edit-btn" onclick="startLifeEdit(' + index + ')" title="Edit post"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.85 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button>' : '';
+      return '<div class="recognition-card" id="life-card-' + index + '">' + editBtn +
+        '<div class="card-header">' +
+        '<div class="card-meta"><h3>' + rec.from + '</h3><span class="timestamp">' + displayTime + '</span></div></div>' +
+        '<div class="card-message" id="life-msg-' + index + '">' + rec.message + '</div>' + imageHtml +
+        '<div class="card-actions"><button class="action-btn" onclick="toggleLifeLike(this,' + index + ')">❤️ <span>' + rec.likes + '</span></button> ' + catHtml + '</div></div>';
+    }
+
+    function renderLifeFeed() {
+      document.getElementById('lifeFeed').innerHTML = lifeRecognitions.map((r, i) => renderLifeCard(r, i)).join('');
+    }
+
+    function updateLifeProfileCard() {
+      const name = document.getElementById('lifeProfileSelect').value || document.getElementById('lifeFromName').value || '';
+      if (!name) return;
+      const profile = getProfile(name);
+      const avatarEl = document.getElementById('lifeProfileAvatar');
+      const detailsEl = document.getElementById('lifeProfileDetails');
+      const linkEl = document.getElementById('lifeProfileLink');
+
+      if (profile.avatarUrl) {
+        avatarEl.innerHTML = '<img src="' + profile.avatarUrl + '" alt="Avatar">';
+      } else {
+        avatarEl.innerHTML = getInitials(name);
+        avatarEl.style.background = getColor(name);
+      }
+
+      let html = '';
+      if (profile.birthday) html += '<div class="profile-detail-item"><span class="detail-icon">🎂</span><div><div class="detail-label">Birthday</div><div class="detail-value">' + profile.birthday + '</div></div></div>';
+      if (profile.pronouns) html += '<div class="profile-detail-item"><span class="detail-icon">💬</span><div><div class="detail-label">Pronouns</div><div class="detail-value">' + profile.pronouns + '</div></div></div>';
+      if (profile.favDrink) html += '<div class="profile-detail-item"><span class="detail-icon">☕</span><div><div class="detail-label">Drink Order</div><div class="detail-value">' + profile.favDrink + '</div></div></div>';
+      if (profile.snacks && profile.snacks.length) html += '<div class="profile-detail-item"><span class="detail-icon">🍿</span><div><div class="detail-label">Fav Snacks</div><div class="profile-tags">' + profile.snacks.map(s => '<span class="profile-tag">' + s + '</span>').join('') + '</div></div></div>';
+      if (profile.hobbies && profile.hobbies.length) html += '<div class="profile-detail-item"><span class="detail-icon">🎯</span><div><div class="detail-label">Hobbies</div><div class="profile-tags">' + profile.hobbies.map(h => '<span class="profile-tag">' + h + '</span>').join('') + '</div></div></div>';
+      if (profile.holidays && profile.holidays.length) html += '<div class="profile-detail-item"><span class="detail-icon">🎉</span><div><div class="detail-label">Holidays</div><div class="profile-tags">' + profile.holidays.map(h => '<span class="profile-tag">' + h + '</span>').join('') + '</div></div></div>';
+      if (profile.funFact) html += '<div class="profile-detail-item"><span class="detail-icon">✨</span><div><div class="detail-label">Fun Fact</div><div class="detail-value">' + profile.funFact + '</div></div></div>';
+      detailsEl.innerHTML = html;
+
+      if (linkEl) linkEl.href = 'profile.html?name=' + encodeURIComponent(name);
+    }
+
+    function toggleLifeLike(btn, index) {
+      btn.classList.toggle('liked');
+      const span = btn.querySelector('span');
+      if (btn.classList.contains('liked')) lifeRecognitions[index].likes++;
+      else lifeRecognitions[index].likes--;
+      span.textContent = lifeRecognitions[index].likes;
+      if (lifeRecognitions[index].id) db.collection('recognitions').doc(lifeRecognitions[index].id).update({ likes: lifeRecognitions[index].likes });
+    }
+
+    function startLifeEdit(index) {
+      const el = document.getElementById('life-msg-' + index);
+      el.innerHTML = '<textarea class="card-edit-textarea" id="lifeEditArea-' + index + '">' + lifeRecognitions[index].message + '</textarea><div class="card-edit-actions"><button class="card-edit-save" onclick="saveLifeEdit(' + index + ')">Save</button><button class="card-edit-cancel" onclick="renderLifeFeed()">Cancel</button></div>';
+    }
+    async function saveLifeEdit(index) {
+      const v = document.getElementById('lifeEditArea-' + index).value.trim();
+      if (v) { lifeRecognitions[index].message = v; if (lifeRecognitions[index].id) await db.collection('recognitions').doc(lifeRecognitions[index].id).update({ message: v }); }
+      renderLifeFeed();
+    }
+
+    async function submitLifePost() {
+      const from = getLifeUser();
+      const message = document.getElementById('lifeMessage').value.trim();
+      if (!from || lifeSelectedCategories.length === 0 || !message) {
+        alert('Please fill in your name, at least one category, and a message.');
+        return;
+      }
+      await db.collection('recognitions').add({
+        from: from, to: '',
+        category: [...lifeSelectedCategories],
+        message: message, image: lifeSelectedMedia || '',
+        likes: 0, tab: 'life',
+        createdAt: Date.now()
+      });
+      await loadAllData();
+      lifeSelectedCategories = [];
+      renderLifeCatTags();
+      document.getElementById('lifeMessage').value = '';
+      removeLifeMedia();
+      renderLifeFeed();
+      const toast = document.getElementById('lifeSuccessToast');
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+
+    // Sync life profile select with saved name
+    const lifeProfileSelect = document.getElementById('lifeProfileSelect');
+    const lifeSaved = localStorage.getItem('recognition_wall_username');
+    if (lifeSaved) {
+      const m = Array.from(lifeProfileSelect.options).find(o => o.value === lifeSaved);
+      if (m) lifeProfileSelect.value = lifeSaved;
+      const m2 = Array.from(document.getElementById('lifeFromName').options).find(o => o.value === lifeSaved);
+      if (m2) document.getElementById('lifeFromName').value = lifeSaved;
+    }
+    lifeProfileSelect.addEventListener('change', function() {
+      document.getElementById('lifeFromName').value = this.value;
+      localStorage.setItem('recognition_wall_username', this.value);
+      // Sync work tab
+      const ps = document.getElementById('profileSelect');
+      const fn = document.getElementById('fromName');
+      if (ps) { const m = Array.from(ps.options).find(o => o.value === this.value); if (m) ps.value = this.value; }
+      if (fn) { const m = Array.from(fn.options).find(o => o.value === this.value); if (m) { fn.value = this.value; document.getElementById('fromNameCustom').style.display = 'none'; } }
+      if (typeof updateProfileCard === 'function') updateProfileCard();
+      updateLifeProfileCard();
+    });
+    document.getElementById('lifeFromName').addEventListener('change', function() {
+      lifeProfileSelect.value = this.value;
+      localStorage.setItem('recognition_wall_username', this.value);
+      // Sync work tab
+      const ps = document.getElementById('profileSelect');
+      const fn = document.getElementById('fromName');
+      if (ps) { const m = Array.from(ps.options).find(o => o.value === this.value); if (m) ps.value = this.value; }
+      if (fn) { const m = Array.from(fn.options).find(o => o.value === this.value); if (m) { fn.value = this.value; document.getElementById('fromNameCustom').style.display = 'none'; } }
+      if (typeof updateProfileCard === 'function') updateProfileCard();
+      updateLifeProfileCard();
+    });
+
+    // === About the Team ===
+    const allMembers = [
+      'Balamurugan Natarajan','Corbin Weaver','Hattie Duke','Ivan Sarmiento',
+      'Lavanya Cheruku','Logan Nichols','Malia Jones','Nirali Patel',
+      'Peter Siemsen','Rodrigo Navarro Morales','Ryan Ward',
+      'Sanjeevkumar Senthil','Shihan Shaheed','Summit Modi',
+      'Val Turcin','Vamsi Krishna Rallabhandi'
+    ];
+
+    function renderTeamGrid() {
+      const grid = document.getElementById('teamGrid');
+      grid.innerHTML = allMembers.map(name => {
+        const p = getProfile(name);
+        const avatarHtml = p.avatarUrl
+          ? '<img src="' + p.avatarUrl + '" alt="Avatar">'
+          : '<span>' + getInitials(name) + '</span>';
+        const avatarBg = p.avatarUrl ? '' : 'background:' + getColor(name);
+
+        const detail = (icon, label, value) =>
+          '<div class="member-detail"><div class="member-detail-label">' + icon + ' ' + label + '</div><div class="member-detail-value">' + (value || '—') + '</div></div>';
+
+        const tagDetail = (icon, label, arr) =>
+          '<div class="member-detail"><div class="member-detail-label">' + icon + ' ' + label + '</div><div class="member-tags">' +
+          (arr && arr.length ? arr.map(t => '<span class="member-tag">' + t + '</span>').join('') : '<span style="color:#999;font-size:0.78rem;">—</span>') +
+          '</div></div>';
+
+        return '<div class="team-member-card">' +
+          '<div class="member-avatar" style="' + avatarBg + '">' + avatarHtml + '</div>' +
+          '<div class="member-name">' + name + '</div>' +
+          detail('🎂', 'Birthday', p.birthday) +
+          detail('💬', 'Pronouns', p.pronouns) +
+          detail('☕', 'Drink Order', p.favDrink) +
+          tagDetail('🍿', 'Fav Snacks', p.snacks) +
+          tagDetail('🎯', 'Hobbies', p.hobbies) +
+          tagDetail('🎉', 'Holidays', p.holidays) +
+          detail('✨', 'Fun Fact', p.funFact) +
+          '<a class="member-edit" href="profile.html?name=' + encodeURIComponent(name) + '">Edit Profile</a>' +
+          '</div>';
+      }).join('');
+    }
+
+    renderTeamGrid();
+
+    // === Initialize: load from SharePoint ===
+    (async function init() {
+      const ok = await loadAllData();
+      if (!ok) {
+        // If SharePoint fails, show a message
+        document.getElementById('feed').innerHTML = '<div style="text-align:center;color:#888;padding:40px;">Could not connect to SharePoint. Check your network connection and try refreshing.</div>';
+      }
+      renderFeed();
+      renderLifeFeed();
+      updateProfileCard();
+      updateLifeProfileCard();
+      renderTeamGrid();
+      updateDataStatus();
+    })();
+  </script>
+</body>
+</html>
