@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Profile - Extra Mile</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22gold%22><polygon points=%2212,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26%22/></svg>">
+  <title>My Profile - The Extra Mile</title>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <style>
@@ -100,7 +101,21 @@
         <label for="favDrink">Go-To Coffee/Drink Order</label>
         <input type="text" id="favDrink" placeholder="e.g. Iced oat milk latte">
       </div>
+    </div>
+
+    <div class="profile-section">
+      <h2>About My Work</h2>
       <div class="form-group">
+        <label for="jobTitle">Job Title & What It Means</label>
+        <textarea id="jobTitle" placeholder="e.g. Data Analyst - I help the team make sense of our data and turn it into actionable insights..."></textarea>
+      </div>
+      <div class="form-group">
+        <label for="givesEnergy">What Gives You Energy</label>
+        <textarea id="givesEnergy" placeholder="e.g. Collaborating with the team, solving tricky problems, learning new tools..."></textarea>
+      </div>
+      <div class="form-group">
+        <label for="drainsEnergy">What Drains Your Energy</label>
+        <textarea id="drainsEnergy" placeholder="e.g. Back-to-back meetings with no breaks, unclear requirements..."></textarea>
       </div>
     </div>
 
@@ -181,6 +196,10 @@
         document.getElementById('funFact').value = profile.funFact || '';
         document.getElementById('favDrink').value = profile.favDrink || '';
 
+        document.getElementById('jobTitle').value = profile.jobTitle || '';
+        document.getElementById('givesEnergy').value = profile.givesEnergy || '';
+        document.getElementById('drainsEnergy').value = profile.drainsEnergy || '';
+
         window.setTags_snacks(profile.snacks || []);
         window.setTags_hobbies(profile.hobbies || []);
 
@@ -222,6 +241,9 @@
         pronouns: document.getElementById('pronouns').value.trim(),
         funFact: document.getElementById('funFact').value.trim(),
         favDrink: document.getElementById('favDrink').value.trim(),
+        jobTitle: document.getElementById('jobTitle').value.trim(),
+        givesEnergy: document.getElementById('givesEnergy').value.trim(),
+        drainsEnergy: document.getElementById('drainsEnergy').value.trim(),
         snacks: window.getTags_snacks(),
         hobbies: window.getTags_hobbies(),
         avatarUrl: avatar.dataset.url || ''
