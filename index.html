@@ -883,7 +883,7 @@
     function startEdit(index) {
       const msgEl = document.getElementById('msg-' + index);
       const current = recognitions[index].message;
-      msgEl.innerHTML = '<textarea class="card-edit-textarea" id="editArea-' + index + '">' + current + '</textarea><div class="card-edit-actions"><button class="card-edit-save" onclick="saveEdit(' + index + ')">Save</button><button class="card-edit-cancel" onclick="cancelEdit(' + index + ')">Cancel</button></div>';
+      msgEl.innerHTML = '<textarea class="card-edit-textarea" id="editArea-' + index + '">' + current + '</textarea><div class="card-edit-actions"><button class="card-edit-save" onclick="saveEdit(' + index + ')">Save</button><button class="card-edit-cancel" onclick="cancelEdit(' + index + ')">Cancel</button><button class="card-edit-cancel" style="color:#e53935;border-color:#e53935;" onclick="deletePost(' + index + ')">Delete</button></div>';
     }
 
     async function saveEdit(index) {
@@ -894,6 +894,15 @@
         if (recognitions[index].id) await db.collection('recognitions').doc(recognitions[index].id).update({ message: newMsg });
       }
       renderFeed();
+    }
+
+    async function deletePost(index) {
+      if (!confirm('Delete this post? This cannot be undone.')) return;
+      const rec = recognitions[index];
+      if (rec.id) await db.collection('recognitions').doc(rec.id).delete();
+      recognitions.splice(index, 1);
+      renderFeed();
+      updateProfileCard();
     }
 
     function cancelEdit(index) {
@@ -1284,7 +1293,7 @@
     function startLifeEdit(index) {
       const el = document.getElementById('life-msg-' + index);
       const current = lifeRecognitions[index].message;
-      el.innerHTML = '<textarea class="card-edit-textarea" id="lifeEditArea-' + index + '">' + current + '</textarea><div class="card-edit-actions"><button class="card-edit-save" onclick="saveLifeEdit(' + index + ')">Save</button><button class="card-edit-cancel" onclick="renderLifeFeed()">Cancel</button></div>';
+      el.innerHTML = '<textarea class="card-edit-textarea" id="lifeEditArea-' + index + '">' + current + '</textarea><div class="card-edit-actions"><button class="card-edit-save" onclick="saveLifeEdit(' + index + ')">Save</button><button class="card-edit-cancel" onclick="renderLifeFeed()">Cancel</button><button class="card-edit-cancel" style="color:#e53935;border-color:#e53935;" onclick="deleteLifePost(' + index + ')">Delete</button></div>';
     }
 
     async function saveLifeEdit(index) {
@@ -1293,6 +1302,14 @@
         lifeRecognitions[index].message = v;
         if (lifeRecognitions[index].id) await db.collection('recognitions').doc(lifeRecognitions[index].id).update({ message: v });
       }
+      renderLifeFeed();
+    }
+
+    async function deleteLifePost(index) {
+      if (!confirm('Delete this post? This cannot be undone.')) return;
+      const rec = lifeRecognitions[index];
+      if (rec.id) await db.collection('recognitions').doc(rec.id).delete();
+      lifeRecognitions.splice(index, 1);
       renderLifeFeed();
     }
 
@@ -1334,16 +1351,6 @@
       else lifeRecognitions[index].likes--;
       span.textContent = lifeRecognitions[index].likes;
       if (lifeRecognitions[index].id) db.collection('recognitions').doc(lifeRecognitions[index].id).update({ likes: lifeRecognitions[index].likes });
-    }
-
-    function startLifeEdit(index) {
-      const el = document.getElementById('life-msg-' + index);
-      el.innerHTML = '<textarea class="card-edit-textarea" id="lifeEditArea-' + index + '">' + lifeRecognitions[index].message + '</textarea><div class="card-edit-actions"><button class="card-edit-save" onclick="saveLifeEdit(' + index + ')">Save</button><button class="card-edit-cancel" onclick="renderLifeFeed()">Cancel</button></div>';
-    }
-    async function saveLifeEdit(index) {
-      const v = document.getElementById('lifeEditArea-' + index).value.trim();
-      if (v) { lifeRecognitions[index].message = v; if (lifeRecognitions[index].id) await db.collection('recognitions').doc(lifeRecognitions[index].id).update({ message: v }); }
-      renderLifeFeed();
     }
 
     async function submitLifePost() {
