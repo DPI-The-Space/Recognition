@@ -560,6 +560,10 @@
         <input type="text" id="calEventTime" placeholder="e.g. 2:00 PM">
       </div>
       <div class="form-group">
+        <label>Description (optional)</label>
+        <textarea id="calEventDesc" placeholder="Add details about this event..." style="width:100%;padding:10px 12px;border:1.5px solid #c0d0e0;border-radius:10px;font-size:0.9rem;font-family:inherit;min-height:60px;resize:vertical;"></textarea>
+      </div>
+      <div class="form-group">
         <label>Added By</label>
         <input type="text" id="calEventBy" readonly>
       </div>
@@ -575,7 +579,6 @@
       <span class="data-status" id="dataStatus"></span>
       <button class="toolbar-btn" onclick="exportData()">📥 Export</button>
       <label class="toolbar-btn" style="margin:0">📤 Import <input type="file" class="hidden-input" accept=".json" onchange="importData(event)"></label>
-      <button class="toolbar-btn danger" onclick="clearAllData()">🗑 Clear All</button>
     </div>
   </footer>
 
@@ -1201,6 +1204,11 @@
     document.getElementById('fromName').addEventListener('change', function() {
       if (this.value !== '__custom__') {
         localStorage.setItem('recognition_wall_username', this.value);
+        // Sync to life tab
+        const lifeFN = document.getElementById('lifeFromName');
+        const lifePS = document.getElementById('lifeProfileSelect');
+        if (lifeFN) { const m = Array.from(lifeFN.options).find(o => o.value === this.value); if (m) lifeFN.value = this.value; }
+        if (lifePS) { const m = Array.from(lifePS.options).find(o => o.value === this.value); if (m) lifePS.value = this.value; }
       }
     });
     document.getElementById('fromNameCustom').addEventListener('blur', function() {
@@ -1356,10 +1364,9 @@
     async function submitLifePost() {
       const from = getLifeUser();
       const message = document.getElementById('lifeMessage').value.trim();
-      if (!from || lifeSelectedCategories.length === 0 || !message) {
-        alert('Please fill in your name, at least one category, and a message.');
-        return;
-      }
+      if (!from) { alert('Please select your name in the "Your Name" dropdown.'); return; }
+      if (lifeSelectedCategories.length === 0) { alert('Please select at least one category.'); return; }
+      if (!message) { alert('Please enter a message.'); return; }
       await db.collection('recognitions').add({
         from: from, to: '',
         category: [...lifeSelectedCategories],
@@ -1487,6 +1494,20 @@
       const grid = document.getElementById('calGrid');
       let html = dayNames.map(d => '<div class="calendar-day-label">' + d + '</div>').join('');
 
+      // Build birthday lookup: key = "MM-DD" -> array of names
+      const birthdayMap = {};
+      Object.values(allProfiles).forEach(p => {
+        if (p.birthday) {
+          // birthday is stored as YYYY-MM-DD from date input
+          const parts = p.birthday.split('-');
+          if (parts.length === 3) {
+            const key = parts[1] + '-' + parts[2]; // MM-DD
+            if (!birthdayMap[key]) birthdayMap[key] = [];
+            birthdayMap[key].push(p.personName);
+          }
+        }
+      });
+
       const firstDay = new Date(calYear, calMonth, 1).getDay();
       const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
       const daysInPrev = new Date(calYear, calMonth, 0).getDate();
@@ -1502,9 +1523,16 @@
       // Current month
       for (let d = 1; d <= daysInMonth; d++) {
         const dateStr = calYear + '-' + String(calMonth+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+        const mmdd = String(calMonth+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
         const isToday = dateStr === todayStr ? ' today' : '';
         const events = getEventsForDate(dateStr);
-        const evHtml = events.map(e => '<div class="calendar-event" title="' + e.title + (e.time ? ' at ' + e.time : '') + '">' + e.title + '</div>').join('');
+        let evHtml = events.map(e => '<div class="calendar-event" title="' + e.title + (e.time ? ' at ' + e.time : '') + '">' + e.title + '</div>').join('');
+        // Add birthdays
+        const bdays = birthdayMap[mmdd] || [];
+        bdays.forEach(name => {
+          const first = name.split(' ')[0];
+          evHtml += '<div class="calendar-event" style="background:rgba(233,30,99,0.2);color:#e91e63;" title="' + name + '\'s Birthday">🎂 ' + first + '</div>';
+        });
         html += '<div class="calendar-day' + isToday + '" onclick="openCalModal(\'' + dateStr + '\')">' +
           '<div class="day-num">' + d + '</div>' + evHtml + '</div>';
       }
@@ -1526,20 +1554,36 @@
       const parts = dateStr.split('-');
       document.getElementById('calModalTitle').textContent = monthNames[parseInt(parts[1])-1] + ' ' + parseInt(parts[2]) + ', ' + parts[0];
 
-      // Show existing events for this date
+      // Show existing events and birthdays for this date
       const events = getEventsForDate(dateStr);
+      const mmdd = parts[1] + '-' + parts[2];
+      const bdays = Object.values(allProfiles).filter(p => {
+        if (!p.birthday) return false;
+        const bp = p.birthday.split('-');
+        return bp.length === 3 && bp[1] + '-' + bp[2] === mmdd;
+      });
+
       const evList = document.getElementById('calModalEvents');
-      if (events.length) {
-        evList.innerHTML = events.map(e => '<div class="cal-event-item"><strong>' + e.title + '</strong>' + (e.time ? ' at ' + e.time : '') + '<br><span style="color:#888;font-size:0.78rem;">Added by ' + (e.addedBy || 'Unknown') + '</span></div>').join('');
-      } else {
-        evList.innerHTML = '<div style="color:#888;font-size:0.85rem;margin-bottom:8px;">No events yet</div>';
+      let html = '';
+      bdays.forEach(p => {
+        html += '<div class="cal-event-item" style="background:#fce4ec;"><strong>🎂 ' + p.personName + '\'s Birthday</strong></div>';
+      });
+      events.forEach(e => {
+        const desc = e.description ? '<br><span style="color:#555;font-size:0.8rem;">' + e.description + '</span>' : '';
+        const delBtn = '<button onclick="deleteCalEvent(\'' + e.id + '\')" style="float:right;background:none;border:none;color:#e53935;cursor:pointer;font-size:0.8rem;padding:2px 6px;" title="Delete event">✕</button>';
+        html += '<div class="cal-event-item">' + delBtn + '<strong>' + e.title + '</strong>' + (e.time ? ' at ' + e.time : '') + desc + '<br><span style="color:#888;font-size:0.78rem;">Added by ' + (e.addedBy || 'Unknown') + '</span></div>';
+      });
+      if (!html) {
+        html = '<div style="color:#888;font-size:0.85rem;margin-bottom:8px;">No events yet</div>';
       }
+      evList.innerHTML = html;
 
       // Pre-fill the "Added By" field
       const savedName = localStorage.getItem('recognition_wall_username') || '';
       document.getElementById('calEventBy').value = savedName;
       document.getElementById('calEventTitle').value = '';
       document.getElementById('calEventTime').value = '';
+      document.getElementById('calEventDesc').value = '';
 
       document.getElementById('calModal').classList.add('show');
     }
@@ -1548,9 +1592,22 @@
       document.getElementById('calModal').classList.remove('show');
     }
 
+    async function deleteCalEvent(eventId) {
+      if (!confirm('Delete this event?')) return;
+      try {
+        await db.collection('calendarEvents').doc(eventId).delete();
+        await renderCal();
+        openCalModal(calModalDate);
+      } catch(e) {
+        alert('Failed to delete event.');
+        console.error(e);
+      }
+    }
+
     async function saveCalEvent() {
       const title = document.getElementById('calEventTitle').value.trim();
       const time = document.getElementById('calEventTime').value.trim();
+      const description = document.getElementById('calEventDesc').value.trim();
       const addedBy = document.getElementById('calEventBy').value.trim();
       if (!title) { alert('Please enter an event title.'); return; }
 
@@ -1559,6 +1616,7 @@
           date: calModalDate,
           title: title,
           time: time,
+          description: description,
           addedBy: addedBy,
           createdAt: Date.now()
         });
