@@ -1093,21 +1093,27 @@
         return;
       }
 
-      // Create one post per recipient
+      // Create one post per recipient via Firebase
       const now = Date.now();
-      selectedRecipients.forEach((to, i) => {
-        recognitions.unshift({
-          from, to, type: 'individual',
-          category: [...selectedCategories],
-          message,
-          image: selectedMediaUrl,
-          likes: 0, comments: [],
-          time: 'Just now',
-          createdAt: now - i
-        });
-      });
-
-      saveRecognitions();
+      try {
+        for (let i = 0; i < selectedRecipients.length; i++) {
+          const to = selectedRecipients[i];
+          await db.collection('recognitions').add({
+            from: from, to: to,
+            category: [...selectedCategories],
+            message: message,
+            image: selectedMediaUrl || '',
+            likes: 0, tab: 'work',
+            createdAt: now - i
+          });
+        }
+        // Reload from Firebase
+        await loadAllData();
+      } catch(e) {
+        alert('Failed to post. Check your connection and try again.');
+        console.error(e);
+        return;
+      }
 
       // Reset form
       selectedRecipients = [];
