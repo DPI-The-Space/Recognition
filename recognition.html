@@ -1070,25 +1070,33 @@
       renderFeed();
     }
 
+    // --- Photo compression ---
+    function compressImage(file, maxWidth, maxHeight, quality) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = function() {
+          let w = img.width, h = img.height;
+          if (w > maxWidth) { h = h * maxWidth / w; w = maxWidth; }
+          if (h > maxHeight) { w = w * maxHeight / h; h = maxHeight; }
+          const canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.src = URL.createObjectURL(file);
+      });
+    }
+
     // --- Media ---
-    function handlePhotoUpload(event) {
+    async function handlePhotoUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
-      // Warn if photo is large (base64 eats localStorage space)
-      if (file.size > 2 * 1024 * 1024) {
-        if (!confirm('This photo is over 2MB. Large photos use more storage. Continue?')) {
-          event.target.value = '';
-          return;
-        }
-      }
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        selectedMediaUrl = e.target.result;
-        document.getElementById('previewImg').src = selectedMediaUrl;
-        document.getElementById('mediaPreview').style.display = 'block';
-        document.getElementById('gifSearch').style.display = 'none';
-      };
-      reader.readAsDataURL(file);
+      const compressed = await compressImage(file, 600, 600, 0.6);
+      selectedMediaUrl = compressed;
+      document.getElementById('previewImg').src = selectedMediaUrl;
+      document.getElementById('mediaPreview').style.display = 'block';
+      document.getElementById('gifSearch').style.display = 'none';
     }
 
     function toggleGifSearch() {
@@ -1397,16 +1405,13 @@
     });
     function removeLifeCat(i) { lifeSelectedCategories.splice(i, 1); renderLifeCatTags(); }
 
-    function handleLifePhoto(event) {
+    async function handleLifePhoto(event) {
       const file = event.target.files[0];
       if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        lifeSelectedMedia = e.target.result;
-        document.getElementById('lifePreviewImg').src = lifeSelectedMedia;
-        document.getElementById('lifeMediaPreview').style.display = 'block';
-      };
-      reader.readAsDataURL(file);
+      const compressed = await compressImage(file, 600, 600, 0.6);
+      lifeSelectedMedia = compressed;
+      document.getElementById('lifePreviewImg').src = lifeSelectedMedia;
+      document.getElementById('lifeMediaPreview').style.display = 'block';
     }
     function removeLifeMedia() {
       lifeSelectedMedia = null;
