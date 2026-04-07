@@ -240,6 +240,17 @@
     .this-week-detail { font-size: 0.78rem; color: #888; }
     .this-week-cat { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 0.7rem; margin-left: 6px; }
 
+    /* Calendar layout */
+    .cal-layout { max-width: 1400px; margin: 24px auto; padding: 0 16px; display: flex; gap: 16px; align-items: flex-start; }
+    .cal-sidebar { width: 300px; flex-shrink: 0; position: sticky; top: 16px; }
+    .cal-main { flex: 1; min-width: 0; }
+    .cal-sidebar .this-week { margin-bottom: 0; }
+    .calendar-wrap { margin: 0; }
+    @media (max-width: 960px) {
+      .cal-layout { flex-direction: column; }
+      .cal-sidebar { width: 100%; position: static; }
+    }
+
   </style>
 </head>
 <body>
@@ -579,19 +590,23 @@
 
   <!-- Calendar -->
   <div class="tab-page" id="page-calendar">
-    <div style="max-width:900px;margin:24px auto 0;padding:0 16px;">
-      <div class="this-week" id="thisWeekSection">
-        <h3>📅 Happening This Week</h3>
-        <div id="thisWeekList"></div>
+    <div class="cal-layout">
+      <div class="cal-sidebar">
+        <div class="this-week" id="thisWeekSection">
+          <h3>📅 Happening This Week</h3>
+          <div id="thisWeekList"></div>
+        </div>
       </div>
-    </div>
-    <div class="calendar-wrap">
-      <div class="calendar-header">
-        <button class="calendar-nav" onclick="calPrev()">◀ Prev</button>
-        <h2 id="calTitle"></h2>
-        <button class="calendar-nav" onclick="calNext()">Next ▶</button>
+      <div class="cal-main">
+        <div class="calendar-wrap">
+          <div class="calendar-header">
+            <button class="calendar-nav" onclick="calPrev()">◀ Prev</button>
+            <h2 id="calTitle"></h2>
+            <button class="calendar-nav" onclick="calNext()">Next ▶</button>
+          </div>
+          <div class="calendar-grid" id="calGrid"></div>
+        </div>
       </div>
-      <div class="calendar-grid" id="calGrid"></div>
     </div>
   </div>
 
