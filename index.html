@@ -944,6 +944,9 @@
       // Handle category as string or array
       const cats = Array.isArray(rec.category) ? rec.category : (rec.category ? [rec.category] : []);
       const categoryHtml = cats.map(c => `<span class="card-category" style="${getCategoryStyle(c)}">${c}</span>`).join(' ');
+      // Handle to as string or array
+      const toNames = Array.isArray(rec.to) ? rec.to : (rec.to ? [rec.to] : []);
+      const toHtml = toNames.map(n => `<span class="recognizee">${n}</span>`).join(', ');
       const imageHtml = rec.image ? `<img class="card-image" src="${rec.image}" alt="Recognition media">` : '';
       const displayTime = rec.createdAt ? timeAgo(rec.createdAt) : rec.time;
       const currentUser = getCurrentUser();
@@ -960,7 +963,7 @@
           ${editBtnHtml}
           <div class="card-header">
             <div class="card-meta">
-              <h3>${rec.from} recognized <span class="recognizee">${rec.to}</span></h3>
+              <h3>${rec.from} recognized ${toHtml}</h3>
               <span class="timestamp">${displayTime}</span>
             </div>
           </div>
@@ -1013,7 +1016,11 @@
     function renderFeed() {
       // Populate filter dropdowns
       const fromSet = new Set(recognitions.map(r => r.from).filter(Boolean));
-      const toSet = new Set(recognitions.map(r => r.to).filter(Boolean));
+      const toSet = new Set();
+      recognitions.forEach(r => {
+        const toArr = Array.isArray(r.to) ? r.to : (r.to ? [r.to] : []);
+        toArr.forEach(n => { if (n) toSet.add(n); });
+      });
       const fromSel = document.getElementById('workFilterFrom');
       const toSel = document.getElementById('workFilterTo');
       const curFrom = fromSel.value;
@@ -1030,7 +1037,10 @@
 
       const filtered = recognitions.filter((r, i) => {
         if (filterFrom && r.from !== filterFrom) return false;
-        if (filterTo && r.to !== filterTo) return false;
+        if (filterTo) {
+          const toArr = Array.isArray(r.to) ? r.to : (r.to ? [r.to] : []);
+          if (!toArr.includes(filterTo)) return false;
+        }
         if (filterDate && r.createdAt) {
           const d = new Date(r.createdAt);
           const ds = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
@@ -1221,21 +1231,18 @@
         return;
       }
 
-      // Create one post per recipient via Firebase
+      // Create a single post with all recipients
       const now = Date.now();
       try {
-        for (let i = 0; i < selectedRecipients.length; i++) {
-          const to = selectedRecipients[i];
-          const docRef = await db.collection('recognitions').add({
-            from: from, to: to,
-            category: [...selectedCategories],
-            message: message,
-            image: selectedMediaUrl || '',
-            likes: 0, tab: 'work',
-            createdAt: now - i
-          });
-          console.log('Post saved to Firebase with ID:', docRef.id);
-        }
+        const docRef = await db.collection('recognitions').add({
+          from: from, to: [...selectedRecipients],
+          category: [...selectedCategories],
+          message: message,
+          image: selectedMediaUrl || '',
+          likes: 0, tab: 'work',
+          createdAt: now
+        });
+        console.log('Post saved to Firebase with ID:', docRef.id);
         // Reload from Firebase
         await loadAllData();
       } catch(e) {
