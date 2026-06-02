@@ -784,6 +784,7 @@
       <span class="data-status" id="dataStatus"></span>
       <button class="toolbar-btn" onclick="exportData()">📥 Export</button>
       <label class="toolbar-btn" style="margin:0">📤 Import <input type="file" class="hidden-input" accept=".json" onchange="importData(event)"></label>
+      <button class="toolbar-btn" onclick="localStorage.removeItem('recognition_wall_username');localStorage.removeItem('recognition_wall_team');location.reload();">🔓 Logout</button>
     </div>
   </footer>
 
@@ -861,9 +862,12 @@
     }
     (function checkLogin() {
       const saved = localStorage.getItem('recognition_wall_username');
-      if (saved) {
+      const lastVisit = parseInt(localStorage.getItem('last_visit_time') || '0');
+      const oneDay = 24 * 60 * 60 * 1000;
+      if (saved && (Date.now() - lastVisit) < oneDay) {
         document.getElementById('loginOverlay').classList.add('hidden');
       }
+      localStorage.setItem('last_visit_time', Date.now().toString());
     })();
 
     // === Firebase Configuration ===
