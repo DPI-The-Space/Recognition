@@ -104,8 +104,22 @@
 
       <h2>About My Work</h2>
       <div class="form-group">
-        <label for="jobTitle">Job Title & What It Means</label>
-        <textarea id="jobTitle" placeholder="e.g. Data Analyst - I help the team make sense of our data and turn it into actionable insights..."></textarea>
+        <label for="team">Team</label>
+        <select id="team">
+          <option value="" disabled selected>Select your team...</option>
+          <option value="Outage Management">Outage Management</option>
+          <option value="Cross Platform Initiatives (CPI)">Cross Platform Initiatives (CPI)</option>
+          <option value="Self-Service Products & Platforms (SSPP)">Self-Service Products &amp; Platforms (SSPP)</option>
+          <option value="Agent Field Ops and Agency (AFOA)">Agent Field Ops and Agency (AFOA)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="jobTitle">Job Title (Charter Title)</label>
+        <input type="text" id="jobTitle" readonly style="background:#f5f8fc;color:#555;">
+      </div>
+      <div class="form-group">
+        <label for="whatIDo">What I Do</label>
+        <textarea id="whatIDo" placeholder="Describe what you actually do day-to-day, your focus areas, projects you work on..."></textarea>
       </div>
       <div class="form-group">
         <label for="givesEnergy">What Gives You Energy</label>
@@ -182,6 +196,101 @@
     // Load profile
     let profileDocId = null;
 
+    const defaultTitles = {
+      'Ryan Ward': 'Director', 'Corbin Weaver': 'Mgr, Data Insights',
+      'John Shuford': 'Mgr, Data Insights', 'Kaylin Elliott': 'Sr Mgr, Data Insights',
+      'Kevin Wagley': 'Mgr, Data Insights', 'Mark Elmer': 'Dir, Data Insights',
+      'Ian Greenwald': 'Mgr, Data Insights', 'Zach K Friedrich': 'Dir, Data Insights',
+      'Meghan Walsh': 'Dir, IT', 'Hemant Singh': 'Principal Architect II',
+      'Cassie Endicott Gentry': 'Mgr, IT',
+      'Pietro Cotta Galvano': 'Nearshore_Data Analyst III',
+      'Krishna Sukesh Nallapotu': 'Database Architect III',
+      'Thomas Tedesco': 'Database Architect IV',
+      'Valentin Turcin': 'Data Developer VI',
+      'Lavanya Cheruku': 'Database Architect IV',
+      'Hattie Duke': 'Data Developer IV',
+      'Malia Jones': 'Data Developer III',
+      'Summit Modi': 'Offshore_Quality Assurance Analyst I',
+      'Rodrigo Morales Navarro': 'Data Developer VI',
+      'Balamurugan Natarajan': 'Quality Assurance Test Lead',
+      'Logan Nichols': 'Integration Analyst III',
+      'Nirali Patel': 'Software Engineer III',
+      'Vamsi Krishna Rallabhandi': 'Database Architect III',
+      'Ivan Sarmiento': 'Nearshore_Database Developer III',
+      'Sanjeevkumar Senthil': 'Offshore_Quality Assurance Test Lead',
+      'Peter Siemsen': 'Data Analyst I',
+      'Ani Argiris': 'Software Engineer IV',
+      'Nikita Chaturvedi': 'Specialized Software Developer III',
+      'Breno Marcolino': 'Nearshore_Data Analyst III',
+      'Anthony Pachelli': 'Specialized Software Developer III',
+      'Amanda Ramsay': 'Data Developer IV',
+      'Ryan Reid': 'Data Developer VI',
+      'Anna Zheng': 'Data Developer VI',
+      'Victor Valente': 'Nearshore_Database Developer III',
+      'Nandi Xie': 'Data Analyst',
+      'Denner Martins Andreao': 'Nearshore_Database Developer III',
+      'Daniel Baker': 'Data Developer IV',
+      'Deepa Balakrishnan': 'Software Engineer IV',
+      'Leonardo Cavalcante Coutinho': 'Nearshore_Database Developer III',
+      'Samuel de Oliveira Rego': 'Software Engineer',
+      'Weinner Ivanouskas': 'Nearshore_Software Developer IV',
+      'Alan Le': 'Data Developer V',
+      'Chris Longfield-Smith': 'Data Developer VI',
+      'Felipe Curvelo de Oliveria': 'Nearshore_Database Developer III',
+      'Gustavo Sussekind': 'Nearshore_Database Developer IV',
+      'Lucia Alvarez': 'Nearshore_Software Engineer IV',
+      'Reid Hansen': 'Specialized Business/Systems Analyst IV',
+      'Gabrielle Harrison': 'Data Analyst III',
+      'Evelyn T Marca': 'Data Developer IV',
+      'Gabriel Michelstardter': 'Nearshore_Database Developer III',
+      'Yash Rustagi': 'Data Scientist II',
+      'Amy Thompson': 'Data Developer VI',
+      'Tal Wanish': 'Software Developer IV',
+      'Keanan Anderson': 'Data Analyst III',
+      'Eduardo Gabriel Gosmann Cardoso': 'Nearshore_Data Analyst III',
+      'Daggim H Desta': 'Intern',
+      'Hannah Eddy': 'Data Developer III',
+      'Kimberly Helms': 'Data Developer IV',
+      'Justin Hopkins': 'Specialized Business/Systems Analyst IV',
+      'Elijah Jarocki': 'Data Analyst III',
+      'Praewpailin Johnson': 'Software Engineer IV',
+      'Daniel Kamis': 'Software Engineer IV',
+      'Dmitri LaCour': 'Specialized Software Developer III',
+      'Sean Mifflin': 'Data Analyst III',
+      'Angel Murgano': 'Nearshore_Database Developer III',
+      'Aileen Park': 'Data Analyst III',
+      'Leonardo Petterin': 'Nearshore_Database Developer III',
+      'Kharella Pozzobon': 'Software Engineer IV',
+      'Ben Prado': 'Software Engineer IV',
+      'Ricardo Flores': 'Nearshore_Database Developer III',
+      'Victor Huerta': 'Nearshore_Database Developer III',
+      'Pablo Nava': 'Nearshore_Database Developer III',
+      'Victor Porter': 'Database Developer I',
+      'Sebastian Rangel': 'Nearshore_Database Developer III',
+      'Rolando Santana': 'Nearshore_Database Developer III',
+      'Carlos Urriola': 'Nearshore_Database Developer III',
+      'Hajar Bendada': 'Data Scientist I',
+      'Balaji Chandramohan': 'Offshore_Software Engineer I',
+      'Jonah Doelger': 'Data Scientist II',
+      'Navaneethan K': 'Offshore_Quality Assurance Analyst III',
+      'Shubhada Karluke': 'Offshore_Software Engineer I',
+      'Vibin Manthattil Jose': 'Software Engineer IV',
+      'Kaden M Tourdot': 'Data Scientist I',
+      'Sameer Khan': 'Specialized Solutions Architect IV',
+      'Bharath Matlapudi': 'Specialized Software Developer III',
+      'Narendra Bagam': 'Specialized Software Developer III',
+      'Kristina L Bryan': 'Software Engineer III',
+      'Sushmitha Cherukuri': 'Specialized Software Developer IV',
+      'Naresh Dunga': 'Offshore_Quality Assurance Analyst III',
+      'Jyotish Jadhav': 'Offshore_System Administrator IV',
+      'Muhammad Khan': 'Specialized Software Developer IV',
+      'Daniel Komanapalli': 'Specialized Software Developer III',
+      'Akhil Reddy Leburu': 'Specialized Software Developer III',
+      'Azad K Patel': 'Software Engineer IV',
+      'Shiv Sharma': 'Specialized Software Developer IV',
+      'Nicholas Anson': 'Software Engineer III'
+    };
+
     async function loadProfile() {
       document.getElementById('displayName').value = userName;
       try {
@@ -193,8 +302,10 @@
         document.getElementById('pronouns').value = profile.pronouns || '';
         document.getElementById('funFact').value = profile.funFact || '';
         document.getElementById('favDrink').value = profile.favDrink || '';
+        document.getElementById('team').value = profile.team || '';
 
-        document.getElementById('jobTitle').value = profile.jobTitle || '';
+        document.getElementById('jobTitle').value = profile.jobTitle || defaultTitles[userName] || '';
+        document.getElementById('whatIDo').value = profile.whatIDo || '';
         document.getElementById('givesEnergy').value = profile.givesEnergy || '';
         document.getElementById('drainsEnergy').value = profile.drainsEnergy || '';
 
@@ -204,8 +315,17 @@
         const avatar = document.getElementById('avatarPreview');
         if (profile.avatarUrl) {
           avatar.innerHTML = '<img src="' + profile.avatarUrl + '" alt="Avatar">';
+          avatar.dataset.url = profile.avatarUrl;
+          // Cache avatar in localStorage
+          localStorage.setItem('avatar_' + userName, profile.avatarUrl);
         } else if (userName) {
           avatar.textContent = userName.split(' ').map(w => w[0]).join('').toUpperCase();
+          // Try localStorage cache
+          const cached = localStorage.getItem('avatar_' + userName);
+          if (cached) {
+            avatar.innerHTML = '<img src="' + cached + '" alt="Avatar">';
+            avatar.dataset.url = cached;
+          }
         }
       } catch(e) {
         console.warn('Failed to load profile from Firebase:', e);
@@ -233,18 +353,22 @@
 
     async function saveProfile() {
       const avatar = document.getElementById('avatarPreview');
+      const avatarUrl = avatar.dataset.url || '';
+      const birthday = document.getElementById('birthday').value.trim();
       const data = {
         personName: userName,
-        birthday: document.getElementById('birthday').value.trim(),
+        birthday: birthday,
         pronouns: document.getElementById('pronouns').value.trim(),
         funFact: document.getElementById('funFact').value.trim(),
         favDrink: document.getElementById('favDrink').value.trim(),
+        team: document.getElementById('team').value || '',
         jobTitle: document.getElementById('jobTitle').value.trim(),
+        whatIDo: document.getElementById('whatIDo').value.trim(),
         givesEnergy: document.getElementById('givesEnergy').value.trim(),
         drainsEnergy: document.getElementById('drainsEnergy').value.trim(),
         snacks: window.getTags_snacks(),
         hobbies: window.getTags_hobbies(),
-        avatarUrl: avatar.dataset.url || ''
+        avatarUrl: avatarUrl
       };
       try {
         if (profileDocId) {
@@ -252,6 +376,42 @@
         } else {
           const ref = await db.collection('profiles').add(data);
           profileDocId = ref.id;
+        }
+        // Persist avatar in localStorage
+        if (avatarUrl) {
+          localStorage.setItem('avatar_' + userName, avatarUrl);
+        }
+        // Auto-add birthday to calendar if set
+        if (birthday) {
+          const parts = birthday.split('-');
+          if (parts.length === 3) {
+            const mmdd = parts[1] + '-' + parts[2];
+            const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+            const firstName = userName.split(' ')[0];
+            const title = '🎂 ' + firstName + "'s Birthday";
+            // Check if birthday event already exists for this person
+            const existing = await db.collection('calendarEvents')
+              .where('category', '==', 'birthday')
+              .where('addedBy', '==', userName)
+              .get();
+            const alreadyHas = existing.docs.some(doc => doc.data().title === title);
+            if (!alreadyHas) {
+              // Add birthday for current year and next year
+              const thisYear = new Date().getFullYear();
+              for (let y = thisYear; y <= thisYear + 1; y++) {
+                const dateStr = y + '-' + parts[1] + '-' + parts[2];
+                await db.collection('calendarEvents').add({
+                  date: dateStr,
+                  title: title,
+                  category: 'birthday',
+                  time: '',
+                  description: months[parseInt(parts[1])-1] + ' ' + parseInt(parts[2]),
+                  addedBy: userName,
+                  createdAt: Date.now()
+                });
+              }
+            }
+          }
         }
         const toast = document.getElementById('saveToast');
         toast.classList.add('show');

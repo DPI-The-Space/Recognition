@@ -11,6 +11,27 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #02193d; color: #1a1a2e; min-height: 100vh; }
 
+    /* Login Overlay */
+    .login-overlay { position: fixed; inset: 0; background: #02193d; z-index: 9999; display: flex; align-items: center; justify-content: center; }
+    .login-overlay.hidden { display: none; }
+    .login-card { background: #ffffff; border-radius: 20px; padding: 64px 60px; text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,0.4); max-width: 840px; width: 90%; }
+    .login-card h1 { font-size: 1.8rem; color: #0057b8; margin-bottom: 8px; }
+    .login-card p { color: #666; font-size: 0.95rem; margin-bottom: 24px; }
+    .login-card select { width: 100%; padding: 12px 16px; border: 1.5px solid #c0d0e0; border-radius: 10px; font-size: 1rem; font-family: inherit; appearance: none; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%230057b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E") no-repeat right 14px center; padding-right: 36px; cursor: pointer; margin-bottom: 16px; }
+    .login-card select:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .team-picker { display: flex; gap: 12px; margin-bottom: 20px; }
+    .team-pick-btn { flex: 1; padding: 16px 12px; border: 2px solid #c0d0e0; border-radius: 12px; background: #f5f8fc; cursor: pointer; font-size: 0.9rem; font-weight: 600; color: #333; transition: all 0.2s; }
+    .team-pick-btn:hover { border-color: #00a3e0; background: #e8f4fd; }
+    .team-pick-btn.selected { border-color: #0057b8; background: linear-gradient(135deg, #0057b8, #00a3e0); color: white; box-shadow: 0 4px 12px rgba(0,87,184,0.3); }
+    .login-card select:focus { outline: none; border-color: #00a3e0; box-shadow: 0 0 0 3px rgba(0,163,224,0.15); }
+    .login-card .login-btn { background: linear-gradient(135deg, #0057b8, #00a3e0); color: white; border: none; padding: 14px 24px; border-radius: 12px; font-size: 1.05rem; font-weight: 600; cursor: pointer; width: 100%; transition: transform 0.15s, box-shadow 0.2s; }
+    .login-card .login-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,87,184,0.3); }
+    .login-card .login-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    /* Team section headers */
+    .team-section-header { width: 100%; text-align: left; padding: 12px 16px; font-size: 1.1rem; font-weight: 700; color: #ffffff; margin-top: 16px; border-bottom: 2px solid #00a3e0; }
+
     .header { background: linear-gradient(135deg, #1c77e0, #05073e); color: white; padding: 24px; text-align: center; }
     .header h1 { font-size: 1.8rem; margin-bottom: 4px; }
     .header p { opacity: 0.9; font-size: 0.95rem; }
@@ -77,10 +98,10 @@
     /* Recognition Feed */
     .feed-header { font-size: 1.1rem; font-weight: 600; color: #ffffff; margin-bottom: 12px; }
 
-    .feed-filters { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
-    .feed-filters select, .feed-filters input { padding: 6px 10px; border: 1px solid #c0d0e0; border-radius: 8px; font-size: 0.8rem; font-family: inherit; background: #fff; color: #333; }
+    .feed-filters { display: flex; gap: 6px; margin-bottom: 6px; flex-wrap: nowrap; align-items: center; }
+    .feed-filters select, .feed-filters input { padding: 5px 8px; border: 1px solid #c0d0e0; border-radius: 8px; font-size: 0.75rem; font-family: inherit; background: #fff; color: #333; flex: 1; min-width: 0; }
     .feed-filters select:focus, .feed-filters input:focus { outline: none; border-color: #00a3e0; }
-    .feed-filters .filter-clear { padding: 6px 12px; border: none; background: none; color: #0057b8; cursor: pointer; font-size: 0.8rem; font-weight: 600; }
+    .feed-filters .filter-clear { padding: 5px 10px; border: none; background: none; color: #0057b8; cursor: pointer; font-size: 0.75rem; font-weight: 600; white-space: nowrap; }
 
     .recognition-card { background: #ffffff; border-radius: 12px; padding: 20px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); border: 1px solid #d0dce8; }
     .card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
@@ -163,9 +184,12 @@
 
     /* Tabs */
     .tab-bar { display: flex; justify-content: center; gap: 0; background: #0a1f3d; border-bottom: 2px solid #1a3a5c; }
-    .tab-btn { padding: 14px 28px; background: none; border: none; color: #8ab4e8; font-size: 0.92rem; font-weight: 600; cursor: pointer; transition: color 0.2s, border-bottom 0.2s; border-bottom: 3px solid transparent; margin-bottom: -2px; }
+    .tab-btn { padding: 14px 28px; background: none; border: none; color: #8ab4e8; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: color 0.2s, border-bottom 0.2s; border-bottom: 3px solid transparent; margin-bottom: -2px; position: relative; }
     .tab-btn:hover { color: #ffffff; }
     .tab-btn.active { color: #ffffff; border-bottom-color: #00a3e0; }
+    .tab-btn .notif-dot { position: absolute; top: 8px; right: 8px; width: 10px; height: 10px; background: #e53935; border-radius: 50%; display: none; border: 2px solid #0a1f3d; }
+    .tab-btn .notif-dot.visible { display: block; animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.3); } }
     .tab-content { display: none; }
     .tab-content.active { display: flex; }
     .tab-page { display: none; }
@@ -175,8 +199,17 @@
     .tab-placeholder p { font-size: 0.9rem; opacity: 0.7; }
 
     /* About the Team grid */
-    .team-grid { max-width: 1400px; margin: 24px auto; padding: 0 16px; display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; }
-    .team-member-card { background: #ffffff; border-radius: 16px; padding: 20px; width: 280px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); border: 1px solid #d0dce8; text-align: center; }
+    .team-grid { max-width: 1400px; margin: 24px auto; padding: 0 8px; display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+
+    /* Directory */
+    .dir-group-header { font-size: 1rem; font-weight: 700; color: #00a3e0; margin: 20px 0 8px; padding-bottom: 4px; border-bottom: 1px solid #1a3a5c; }
+    .dir-row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 8px; background: #ffffff; margin-bottom: 6px; border: 1px solid #d0dce8; }
+    .dir-row .dir-avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 0.8rem; flex-shrink: 0; overflow: hidden; }
+    .dir-row .dir-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .dir-row .dir-name { font-weight: 600; font-size: 0.9rem; color: #1a1a2e; flex: 1; }
+    .dir-row .dir-title { font-size: 0.8rem; color: #666; flex: 1; }
+    .dir-row .dir-team { font-size: 0.75rem; color: #0057b8; background: rgba(0,87,184,0.1); padding: 2px 8px; border-radius: 10px; }
+    .team-member-card { background: #ffffff; border-radius: 16px; padding: 16px; width: 340px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); border: 1px solid #d0dce8; text-align: center; }
     .team-member-card .member-avatar { width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 1.5rem; margin: 0 auto 10px; overflow: hidden; }
     .team-member-card .member-avatar img { width: 100%; height: 100%; object-fit: cover; }
     .team-member-card .member-name { font-size: 1rem; font-weight: 600; color: #1a1a2e; margin-bottom: 12px; }
@@ -246,6 +279,7 @@
     .cal-sidebar { width: 300px; flex-shrink: 0; position: sticky; top: 16px; }
     .cal-main { flex: 1; min-width: 0; }
     .cal-sidebar .this-week { margin-bottom: 0; }
+    .cal-sidebar .this-week + .this-week { margin-top: 16px; }
     .calendar-wrap { margin: 0; }
     @media (max-width: 960px) {
       .cal-layout { flex-direction: column; }
@@ -255,6 +289,24 @@
   </style>
 </head>
 <body>
+  <!-- Login Overlay -->
+  <div class="login-overlay" id="loginOverlay">
+    <div class="login-card">
+      <h1>⭐ The Space</h1>
+      <p>Welcome! Select your team to get started.</p>
+      <div class="team-picker" id="teamPicker">
+        <button class="team-pick-btn" onclick="pickTeam(this, 'DE & Reporting Ops')">DE & Reporting Ops</button>
+        <button class="team-pick-btn" onclick="pickTeam(this, 'Engagement & Insights')">Engagement & Insights</button>
+        <button class="team-pick-btn" onclick="pickTeam(this, 'Platforms KPIs & AFOA')">Platforms KPIs & AFOA</button>
+        <button class="team-pick-btn" onclick="pickTeam(this, 'Strategic Insights')">Strategic Insights</button>
+      </div>
+      <select id="loginSelect" disabled style="display:none;">
+        <option value="" disabled selected>Choose your name...</option>
+      </select>
+      <button class="login-btn" id="loginBtn" disabled onclick="doLogin()">Enter The Space</button>
+    </div>
+  </div>
+
   <header class="header">
     <h1> The Space </h1>
     <p>An inclusive space where the team can celebrate each other's accomplishments!</p>
@@ -262,17 +314,47 @@
 
   <nav class="tab-bar">
     <button class="tab-btn" onclick="switchTab('about')" id="tab-about">About the Team</button>
-    <button class="tab-btn active" onclick="switchTab('work')" id="tab-work">Work Announcements</button>
-    <button class="tab-btn" onclick="switchTab('life')" id="tab-life">Life Announcements</button>
+    <button class="tab-btn active" onclick="switchTab('work')" id="tab-work">Work Announcements<span class="notif-dot" id="notif-work"></span></button>
+    <button class="tab-btn" onclick="switchTab('life')" id="tab-life">Life Announcements<span class="notif-dot" id="notif-life"></span></button>
     <button class="tab-btn" onclick="switchTab('resources')" id="tab-resources">Team Resources</button>
-    <button class="tab-btn" onclick="switchTab('calendar')" id="tab-calendar">Calendar</button>
+    <button class="tab-btn" onclick="switchTab('calendar')" id="tab-calendar">Calendar<span class="notif-dot" id="notif-calendar"></span></button>
+    <button class="tab-btn" onclick="switchTab('directory')" id="tab-directory">Directory</button>
   </nav>
 
   <!-- About the Team -->
   <div class="tab-page" id="page-about">
-    <div class="tab-placeholder" style="margin-bottom:0;">
-      <h2>👥 About the Team</h2>
-      <p>Get to know your teammates</p>
+    <div style="width:100%;padding:16px 24px 14px;background:#1050a0;text-align:center;">
+      <h2 style="color:#ffffff;font-size:1.3rem;margin-bottom:12px;">Get to know the team!</h2>
+      <div style="display:flex;gap:12px;align-items:center;justify-content:center;">
+        <span style="font-size:0.85rem;font-weight:600;color:#ffffff;white-space:nowrap;">Filters:</span>
+        <input type="text" id="teamSearchFilter" placeholder="Search by name..." oninput="filterTeamGrid()" style="padding:8px 14px;border:1.5px solid rgba(255,255,255,0.3);border-radius:10px;font-size:0.9rem;background:rgba(255,255,255,0.95);color:#1a1a2e;width:220px;">
+        <select id="teamTeamFilter" onchange="filterTeamGrid()" style="padding:8px 12px;border:1.5px solid rgba(255,255,255,0.3);border-radius:10px;font-size:0.85rem;background:rgba(255,255,255,0.95);color:#1a1a2e;">
+          <option value="">All Teams</option>
+          <option value="DE & Reporting Ops">DE &amp; Reporting Ops</option>
+          <option value="Engagement & Insights">Engagement &amp; Insights</option>
+          <option value="Platforms KPIs & AFOA">Platforms KPIs &amp; AFOA</option>
+          <option value="Strategic Insights">Strategic Insights</option>
+        </select>
+        <select id="teamHobbyFilter" onchange="filterTeamGrid()" style="padding:8px 12px;border:1.5px solid rgba(255,255,255,0.3);border-radius:10px;font-size:0.85rem;background:rgba(255,255,255,0.95);color:#1a1a2e;max-width:160px;">
+          <option value="">All Hobbies</option>
+        </select>
+        <select id="teamBdayFilter" onchange="filterTeamGrid()" style="padding:8px 12px;border:1.5px solid rgba(255,255,255,0.3);border-radius:10px;font-size:0.85rem;background:rgba(255,255,255,0.95);color:#1a1a2e;">
+          <option value="">All Birthday Months</option>
+          <option value="01">January</option>
+          <option value="02">February</option>
+          <option value="03">March</option>
+          <option value="04">April</option>
+          <option value="05">May</option>
+          <option value="06">June</option>
+          <option value="07">July</option>
+          <option value="08">August</option>
+          <option value="09">September</option>
+          <option value="10">October</option>
+          <option value="11">November</option>
+          <option value="12">December</option>
+        </select>
+        <button onclick="clearTeamFilters()" style="padding:8px 14px;border:none;background:rgba(255,255,255,0.2);color:#ffffff;cursor:pointer;font-size:0.85rem;font-weight:600;border-radius:8px;">Clear</button>
+      </div>
     </div>
     <div class="team-grid" id="teamGrid"></div>
   </div>
@@ -284,27 +366,6 @@
     <div class="profile-column">
       <div class="profile-card" id="profileCard">
         <div class="profile-avatar" id="profileAvatar" style="background: #0057b8;">?</div>
-        <select id="profileSelect" class="profile-select">
-          <option value="" disabled selected>Select your name...</option>
-          <option value="Balamurugan Natarajan">Balamurugan Natarajan</option>
-          <option value="Corbin Weaver">Corbin Weaver</option>
-              <option value="Dane Ebanez">Dane Ebanez</option>
-          <option value="Hattie Duke">Hattie Duke</option>
-          <option value="Ivan Sarmiento">Ivan Sarmiento</option>
-              <option value="Kris Kellner">Kris Kellner</option>
-          <option value="Lavanya Cheruku">Lavanya Cheruku</option>
-          <option value="Logan Nichols">Logan Nichols</option>
-          <option value="Malia Jones">Malia Jones</option>
-          <option value="Nirali Patel">Nirali Patel</option>
-          <option value="Peter Siemsen">Peter Siemsen</option>
-          <option value="Rodrigo Navarro Morales">Rodrigo Navarro Morales</option>
-          <option value="Ryan Ward">Ryan Ward</option>
-          <option value="Sanjeevkumar Senthil">Sanjeevkumar Senthil</option>
-          <option value="Shihan Shaheed">Shihan Shaheed</option>
-          <option value="Summit Modi">Summit Modi</option>
-          <option value="Val Turcin">Val Turcin</option>
-          <option value="Vamsi Krishna Rallabhandi">Vamsi Krishna Rallabhandi</option>
-        </select>
         <div class="profile-stats">
           <span><strong id="statGiven">0</strong> Given</span>
           <span><strong id="statReceived">0</strong> Received</span>
@@ -320,6 +381,24 @@
       <div class="feed-filters">
         <select id="workFilterFrom" onchange="renderFeed()"><option value="">All (From)</option></select>
         <select id="workFilterTo" onchange="renderFeed()"><option value="">All (To)</option></select>
+      </div>
+      <div class="feed-filters">
+        <select id="workFilterCat" onchange="renderFeed()">
+          <option value="">All Categories</option>
+          <option value="Adaptability">Adaptability</option>
+          <option value="Takes Initiative">Takes Initiative</option>
+          <option value="Builds High Performing Teams">Builds High Performing Teams</option>
+          <option value="Communicates Effectively">Communicates Effectively</option>
+          <option value="Conflict Management">Conflict Management</option>
+          <option value="Continuously Improves">Continuously Improves</option>
+          <option value="Leads By Example">Leads By Example</option>
+          <option value="Delivers Results">Delivers Results</option>
+          <option value="Motivates Others">Motivates Others</option>
+          <option value="Seeks Challenge">Seeks Challenge</option>
+          <option value="Plans & Organizes">Plans &amp; Organizes</option>
+          <option value="Accountability">Accountability</option>
+          <option value="Improved Stakeholder Rapport">Improved Stakeholder Rapport</option>
+        </select>
         <input type="date" id="workFilterDate" onchange="renderFeed()">
         <button class="filter-clear" onclick="clearWorkFilters()">Clear</button>
       </div>
@@ -479,6 +558,19 @@
       <div class="feed-header">Recent Posts</div>
       <div class="feed-filters">
         <select id="lifeFilterFrom" onchange="renderLifeFeed()"><option value="">All (From)</option></select>
+        <select id="lifeFilterCat" onchange="renderLifeFeed()">
+          <option value="">All Categories</option>
+          <option value="Birthday">Birthday</option>
+          <option value="Wedding">Wedding</option>
+          <option value="New Baby">New Baby</option>
+          <option value="New Pet">New Pet</option>
+          <option value="New Home">New Home</option>
+          <option value="Graduation">Graduation</option>
+          <option value="Travel">Travel</option>
+          <option value="Health & Wellness">Health &amp; Wellness</option>
+          <option value="Holiday">Holiday</option>
+          <option value="Just Because">Just Because</option>
+        </select>
         <input type="date" id="lifeFilterDate" onchange="renderLifeFeed()">
         <button class="filter-clear" onclick="clearLifeFilters()">Clear</button>
       </div>
@@ -597,6 +689,7 @@
         <div style="font-size:0.8rem;color:#888;margin-top:4px;">Panorama</div>
       </a>
     </div>
+    <p style="max-width:700px;margin:0 auto 40px;padding:0 16px;text-align:center;font-size:0.85rem;color:#8ab4e8;">Have suggestions or want other resources added? Reach out to <a href="mailto:malia.jones@spectrum.com" style="color:#00a3e0;">Malia Jones (malia.jones@spectrum.com)</a></p>
   </div>
 
   <!-- Calendar -->
@@ -606,6 +699,10 @@
         <div class="this-week" id="thisWeekSection">
           <h3>📅 Happening This Week</h3>
           <div id="thisWeekList"></div>
+        </div>
+        <div class="this-week" style="margin-top:16px;" id="bdayMonthSection">
+          <h3>🎂 Birthdays This Month</h3>
+          <div id="bdayMonthList"></div>
         </div>
       </div>
       <div class="cal-main">
@@ -619,6 +716,25 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- Directory -->
+  <div class="tab-page" id="page-directory">
+    <div style="width:100%;padding:16px 24px 14px;background:#1050a0;text-align:center;">
+      <h2 style="color:#ffffff;font-size:1.3rem;margin-bottom:12px;">Team Directory</h2>
+      <div style="display:flex;gap:12px;align-items:center;justify-content:center;">
+        <select id="dirTeamFilter" onchange="renderDirectory()" style="padding:8px 12px;border:1.5px solid rgba(255,255,255,0.3);border-radius:10px;font-size:0.85rem;background:rgba(255,255,255,0.95);color:#1a1a2e;">
+          <option value="">All Teams</option>
+          <option value="DE & Reporting Ops">DE &amp; Reporting Ops</option>
+          <option value="Engagement & Insights">Engagement &amp; Insights</option>
+          <option value="Platforms KPIs & AFOA">Platforms KPIs &amp; AFOA</option>
+          <option value="Strategic Insights">Strategic Insights</option>
+        </select>
+        <input type="text" id="dirSearch" placeholder="Search by name..." oninput="renderDirectory()" style="padding:8px 14px;border:1.5px solid rgba(255,255,255,0.3);border-radius:10px;font-size:0.9rem;background:rgba(255,255,255,0.95);color:#1a1a2e;width:250px;">
+      </div>
+    </div>
+    <div id="directoryList" style="max-width:1400px;margin:24px auto;padding:0 16px;"></div>
+    <p style="max-width:700px;margin:0 auto 40px;padding:0 16px;text-align:center;font-size:0.85rem;color:#8ab4e8;">Not seeing a team member on here? Reach out to <a href="mailto:malia.jones@spectrum.com" style="color:#00a3e0;">Malia Jones (malia.jones@spectrum.com)</a> to get them added.</p>
   </div>
 
   <!-- Calendar Modal -->
@@ -672,6 +788,84 @@
   </footer>
 
   <script>
+    // === Login Overlay ===
+    const teamMembers = {
+      'DE & Reporting Ops': [
+        'Kaylin Elliott','Kevin Wagley','Denner Martins Andreao','Leonardo Cavalcante Coutinho',
+        'Alan Le','Gustavo Sussekind','Daniel Baker','Samuel de Oliveira Rego',
+        'Chris Longfield-Smith','Deepa Balakrishnan','Weinner Ivanouskas',
+        'Felipe Curvelo de Oliveria','Nandi Xie'
+      ],
+      'Engagement & Insights': [
+        'Mark Elmer','Lucia Alvarez','Ian Greenwald','Keanan Anderson','Hannah Eddy',
+        'Elijah Jarocki','Dmitri LaCour','Aileen Park','Ben Prado',
+        'Eduardo Gabriel Gosmann Cardoso','Kimberly Helms','Praewpailin Johnson',
+        'Sean Mifflin','Leonardo Petterin','Daggim H Desta','Justin Hopkins',
+        'Daniel Kamis','Angel Murgano','Kharella Pozzobon','Reid Hansen',
+        'Gabrielle Harrison','Evelyn T Marca','Gabriel Michelstardter',
+        'Yash Rustagi','Amy Thompson','Kaden M Tourdot','Tal Wanish',
+        'Zach K Friedrich','Ricardo Flores','Victor Huerta',
+        'Pablo Nava','Victor Porter','Sebastian Rangel','Rolando Santana',
+        'Carlos Urriola'
+      ],
+      'Platforms KPIs & AFOA': [
+        'Ryan Ward','Pietro Cotta Galvano','Krishna Sukesh Nallapotu','John Shuford',
+        'Ani Argiris','Anthony Pachelli','Anna Zheng','Nikita Chaturvedi',
+        'Amanda Ramsay','Breno Marcolino','Ryan Reid','Thomas Tedesco',
+        'Valentin Turcin','Victor Valente','Corbin Weaver','Logan Nichols',
+        'Summit Modi','Lavanya Cheruku','Ivan Sarmiento','Hattie Duke',
+        'Rodrigo Morales Navarro','Nirali Patel','Sanjeevkumar Senthil',
+        'Malia Jones','Balamurugan Natarajan','Vamsi Krishna Rallabhandi','Peter Siemsen'
+      ],
+      'Strategic Insights': [
+        'Meghan Walsh','Hajar Bendada','Balaji Chandramohan','Jonah Doelger',
+        'Cassie Endicott Gentry','Nicholas Anson','Sushmitha Cherukuri',
+        'Muhammad Khan','Azad K Patel','Narendra Bagam','Naresh Dunga',
+        'Daniel Komanapalli','Shiv Sharma','Kristina L Bryan','Jyotish Jadhav',
+        'Akhil Reddy Leburu','Navaneethan K','Shubhada Karluke',
+        'Vibin Manthattil Jose','Hemant Singh','Sameer Khan','Bharath Matlapudi'
+      ]
+    };
+    const loginSelect = document.getElementById('loginSelect');
+    const loginBtn = document.getElementById('loginBtn');
+    let selectedTeam = '';
+    function pickTeam(btn, team) {
+      document.querySelectorAll('.team-pick-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedTeam = team;
+      const members = teamMembers[team] || [];
+      if (members.length) {
+        loginSelect.innerHTML = '<option value="" disabled selected>Choose your name...</option>' +
+          [...members].sort().map(n => '<option value="' + n + '">' + n + '</option>').join('');
+        loginSelect.disabled = false;
+        loginSelect.style.display = '';
+      } else {
+        loginSelect.style.display = 'none';
+        loginSelect.disabled = true;
+      }
+      loginBtn.disabled = true;
+    }
+    loginSelect.addEventListener('change', () => { loginBtn.disabled = !loginSelect.value; });
+    function doLogin() {
+      const name = loginSelect.value;
+      if (!name) return;
+      localStorage.setItem('recognition_wall_username', name);
+      localStorage.setItem('recognition_wall_team', selectedTeam);
+      document.getElementById('loginOverlay').classList.add('hidden');
+      ['profileSelect','lifeProfileSelect','fromName','lifeFromName'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { const m = Array.from(el.options).find(o => o.value === name); if (m) el.value = name; }
+      });
+      updateProfileCard();
+      updateLifeProfileCard();
+    }
+    (function checkLogin() {
+      const saved = localStorage.getItem('recognition_wall_username');
+      if (saved) {
+        document.getElementById('loginOverlay').classList.add('hidden');
+      }
+    })();
+
     // === Firebase Configuration ===
     const firebaseConfig = {
       apiKey: "AIzaSyBTkkuVJC-y6TlubeuMxeHUrrSesUHZWSg",
@@ -735,7 +929,114 @@
     }
 
     function getProfile(name) {
-      return allProfiles[name] || {};
+      const defaults = {
+        'Ryan Ward': { jobTitle: 'Director' },
+        'Corbin Weaver': { jobTitle: 'Mgr, Data Insights' },
+        'John Shuford': { jobTitle: 'Mgr, Data Insights' },
+        'Kaylin Elliott': { jobTitle: 'Sr Mgr, Data Insights' },
+        'Kevin Wagley': { jobTitle: 'Mgr, Data Insights' },
+        'Mark Elmer': { jobTitle: 'Dir, Data Insights' },
+        'Ian Greenwald': { jobTitle: 'Mgr, Data Insights' },
+        'Zach K Friedrich': { jobTitle: 'Dir, Data Insights' },
+        'Meghan Walsh': { jobTitle: 'Dir, IT' },
+        'Hemant Singh': { jobTitle: 'Principal Architect II' },
+        'Cassie Endicott Gentry': { jobTitle: 'Mgr, IT' },
+        'Pietro Cotta Galvano': { jobTitle: 'Nearshore_Data Analyst III' },
+        'Krishna Sukesh Nallapotu': { jobTitle: 'Database Architect III' },
+        'Thomas Tedesco': { jobTitle: 'Database Architect IV' },
+        'Valentin Turcin': { jobTitle: 'Data Developer VI' },
+        'Lavanya Cheruku': { jobTitle: 'Database Architect IV' },
+        'Hattie Duke': { jobTitle: 'Data Developer IV' },
+        'Malia Jones': { jobTitle: 'Data Developer III' },
+        'Summit Modi': { jobTitle: 'Offshore_Quality Assurance Analyst I' },
+        'Rodrigo Morales Navarro': { jobTitle: 'Data Developer VI' },
+        'Balamurugan Natarajan': { jobTitle: 'Quality Assurance Test Lead' },
+        'Logan Nichols': { jobTitle: 'Integration Analyst III' },
+        'Nirali Patel': { jobTitle: 'Software Engineer III' },
+        'Vamsi Krishna Rallabhandi': { jobTitle: 'Database Architect III' },
+        'Ivan Sarmiento': { jobTitle: 'Nearshore_Database Developer III' },
+        'Sanjeevkumar Senthil': { jobTitle: 'Offshore_Quality Assurance Test Lead' },
+        'Peter Siemsen': { jobTitle: 'Data Analyst I' },
+        'Ani Argiris': { jobTitle: 'Software Engineer IV' },
+        'Nikita Chaturvedi': { jobTitle: 'Specialized Software Developer III' },
+        'Breno Marcolino': { jobTitle: 'Nearshore_Data Analyst III' },
+        'Anthony Pachelli': { jobTitle: 'Specialized Software Developer III' },
+        'Amanda Ramsay': { jobTitle: 'Data Developer IV' },
+        'Ryan Reid': { jobTitle: 'Data Developer VI' },
+        'Anna Zheng': { jobTitle: 'Data Developer VI' },
+        'Victor Valente': { jobTitle: 'Nearshore_Database Developer III' },
+        'Nandi Xie': { jobTitle: 'Data Analyst' },
+        'Denner Martins Andreao': { jobTitle: 'Nearshore_Database Developer III' },
+        'Daniel Baker': { jobTitle: 'Data Developer IV' },
+        'Deepa Balakrishnan': { jobTitle: 'Software Engineer IV' },
+        'Leonardo Cavalcante Coutinho': { jobTitle: 'Nearshore_Database Developer III' },
+        'Samuel de Oliveira Rego': { jobTitle: 'Software Engineer' },
+        'Weinner Ivanouskas': { jobTitle: 'Nearshore_Software Developer IV' },
+        'Alan Le': { jobTitle: 'Data Developer V' },
+        'Chris Longfield-Smith': { jobTitle: 'Data Developer VI' },
+        'Felipe Curvelo de Oliveria': { jobTitle: 'Nearshore_Database Developer III' },
+        'Gustavo Sussekind': { jobTitle: 'Nearshore_Database Developer IV' },
+        'Lucia Alvarez': { jobTitle: 'Nearshore_Software Engineer IV' },
+        'Reid Hansen': { jobTitle: 'Specialized Business/Systems Analyst IV' },
+        'Gabrielle Harrison': { jobTitle: 'Data Analyst III' },
+        'Evelyn T Marca': { jobTitle: 'Data Developer IV' },
+        'Gabriel Michelstardter': { jobTitle: 'Nearshore_Database Developer III' },
+        'Yash Rustagi': { jobTitle: 'Data Scientist II' },
+        'Amy Thompson': { jobTitle: 'Data Developer VI' },
+        'Tal Wanish': { jobTitle: 'Software Developer IV' },
+        'Keanan Anderson': { jobTitle: 'Data Analyst III' },
+        'Eduardo Gabriel Gosmann Cardoso': { jobTitle: 'Nearshore_Data Analyst III' },
+        'Daggim H Desta': { jobTitle: 'Intern' },
+        'Hannah Eddy': { jobTitle: 'Data Developer III' },
+        'Kimberly Helms': { jobTitle: 'Data Developer IV' },
+        'Justin Hopkins': { jobTitle: 'Specialized Business/Systems Analyst IV' },
+        'Elijah Jarocki': { jobTitle: 'Data Analyst III' },
+        'Praewpailin Johnson': { jobTitle: 'Software Engineer IV' },
+        'Daniel Kamis': { jobTitle: 'Software Engineer IV' },
+        'Dmitri LaCour': { jobTitle: 'Specialized Software Developer III' },
+        'Sean Mifflin': { jobTitle: 'Data Analyst III' },
+        'Angel Murgano': { jobTitle: 'Nearshore_Database Developer III' },
+        'Aileen Park': { jobTitle: 'Data Analyst III' },
+        'Leonardo Petterin': { jobTitle: 'Nearshore_Database Developer III' },
+        'Kharella Pozzobon': { jobTitle: 'Software Engineer IV' },
+        'Ben Prado': { jobTitle: 'Software Engineer IV' },
+        'Ricardo Flores': { jobTitle: 'Nearshore_Database Developer III' },
+        'Victor Huerta': { jobTitle: 'Nearshore_Database Developer III' },
+        'Pablo Nava': { jobTitle: 'Nearshore_Database Developer III' },
+        'Victor Porter': { jobTitle: 'Database Developer I' },
+        'Sebastian Rangel': { jobTitle: 'Nearshore_Database Developer III' },
+        'Rolando Santana': { jobTitle: 'Nearshore_Database Developer III' },
+        'Carlos Urriola': { jobTitle: 'Nearshore_Database Developer III' },
+        'Hajar Bendada': { jobTitle: 'Data Scientist I' },
+        'Balaji Chandramohan': { jobTitle: 'Offshore_Software Engineer I' },
+        'Jonah Doelger': { jobTitle: 'Data Scientist II' },
+        'Navaneethan K': { jobTitle: 'Offshore_Quality Assurance Analyst III' },
+        'Shubhada Karluke': { jobTitle: 'Offshore_Software Engineer I' },
+        'Vibin Manthattil Jose': { jobTitle: 'Software Engineer IV' },
+        'Kaden M Tourdot': { jobTitle: 'Data Scientist I' },
+        'Sameer Khan': { jobTitle: 'Specialized Solutions Architect IV' },
+        'Bharath Matlapudi': { jobTitle: 'Specialized Software Developer III' },
+        'Narendra Bagam': { jobTitle: 'Specialized Software Developer III' },
+        'Kristina L Bryan': { jobTitle: 'Software Engineer III' },
+        'Sushmitha Cherukuri': { jobTitle: 'Specialized Software Developer IV' },
+        'Naresh Dunga': { jobTitle: 'Offshore_Quality Assurance Analyst III' },
+        'Jyotish Jadhav': { jobTitle: 'Offshore_System Administrator IV' },
+        'Muhammad Khan': { jobTitle: 'Specialized Software Developer IV' },
+        'Daniel Komanapalli': { jobTitle: 'Specialized Software Developer III' },
+        'Akhil Reddy Leburu': { jobTitle: 'Specialized Software Developer III' },
+        'Azad K Patel': { jobTitle: 'Software Engineer IV' },
+        'Shiv Sharma': { jobTitle: 'Specialized Software Developer IV' },
+        'Nicholas Anson': { jobTitle: 'Software Engineer III' }
+      };
+      const profile = allProfiles[name] || {};
+      const def = defaults[name] || {};
+      const result = { ...def, ...profile };
+      // Migrate: if saved jobTitle is long freeform text and we have a default, move it to whatIDo
+      if (def.jobTitle && profile.jobTitle && profile.jobTitle.length > 50) {
+        if (!result.whatIDo) result.whatIDo = profile.jobTitle;
+        result.jobTitle = def.jobTitle;
+      }
+      return result;
     }
 
 
@@ -745,6 +1046,10 @@
       document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
       document.getElementById('tab-' + tab).classList.add('active');
       document.getElementById('page-' + tab).classList.add('active');
+      // Clear notification for this tab
+      const dot = document.getElementById('notif-' + tab);
+      if (dot) dot.classList.remove('visible');
+      localStorage.setItem('lastSeen_' + tab, Date.now().toString());
       // Sync profile name across tabs
       const savedName = localStorage.getItem('recognition_wall_username');
       if (savedName) {
@@ -761,6 +1066,7 @@
         if (typeof renderLifeFeed === 'function') renderLifeFeed();
         if (typeof renderTeamGrid === 'function') renderTeamGrid();
         if (typeof renderCal === 'function') renderCal();
+        if (typeof renderDirectory === 'function') renderDirectory();
       }
     }
 
@@ -935,9 +1241,7 @@
     }
 
     function getCurrentUser() {
-      const fromSelect = document.getElementById('fromName');
-      const fromCustom = document.getElementById('fromNameCustom');
-      return fromSelect.value === '__custom__' ? fromCustom.value.trim() : fromSelect.value;
+      return localStorage.getItem('recognition_wall_username') || '';
     }
 
     function renderCard(rec, index) {
@@ -970,7 +1274,7 @@
           <div class="card-message" id="msg-${index}">${rec.message}</div>
           ${imageHtml}
           <div class="card-actions">
-            <button class="action-btn" onclick="toggleLike(this, ${index})"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg> <span>${rec.likes}</span></button>
+            <button class="action-btn${getLikedPosts().includes(rec.id) ? ' liked' : ''}" onclick="toggleLike(this, ${index})"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg> <span>${rec.likes}</span></button>
             <button class="action-btn" onclick="toggleComments(${index})"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg> ${rec.comments.length} Comments</button>
             ${categoryHtml}
           </div>
@@ -1033,6 +1337,7 @@
       // Apply filters
       const filterFrom = fromSel.value;
       const filterTo = toSel.value;
+      const filterCat = document.getElementById('workFilterCat').value;
       const filterDate = document.getElementById('workFilterDate').value;
 
       const filtered = recognitions.filter((r, i) => {
@@ -1040,6 +1345,10 @@
         if (filterTo) {
           const toArr = Array.isArray(r.to) ? r.to : (r.to ? [r.to] : []);
           if (!toArr.includes(filterTo)) return false;
+        }
+        if (filterCat) {
+          const cats = Array.isArray(r.category) ? r.category : (r.category ? [r.category] : []);
+          if (!cats.includes(filterCat)) return false;
         }
         if (filterDate && r.createdAt) {
           const d = new Date(r.createdAt);
@@ -1059,17 +1368,39 @@
     function clearWorkFilters() {
       document.getElementById('workFilterFrom').value = '';
       document.getElementById('workFilterTo').value = '';
+      document.getElementById('workFilterCat').value = '';
       document.getElementById('workFilterDate').value = '';
       renderFeed();
     }
 
     // --- Interactions ---
+    // --- Likes persistence ---
+    function getLikedPosts() {
+      const user = localStorage.getItem('recognition_wall_username') || '';
+      const key = 'liked_posts_' + user;
+      try { return JSON.parse(localStorage.getItem(key)) || []; } catch(e) { return []; }
+    }
+    function setLikedPosts(arr) {
+      const user = localStorage.getItem('recognition_wall_username') || '';
+      const key = 'liked_posts_' + user;
+      localStorage.setItem(key, JSON.stringify(arr));
+    }
+
     async function toggleLike(btn, index) {
-      btn.classList.toggle('liked');
-      const span = btn.querySelector('span');
       const rec = recognitions[index];
-      if (btn.classList.contains('liked')) { rec.likes++; } else { rec.likes--; }
-      span.textContent = rec.likes;
+      const postId = rec.id;
+      let liked = getLikedPosts();
+      if (liked.includes(postId)) {
+        liked = liked.filter(id => id !== postId);
+        rec.likes = Math.max(0, rec.likes - 1);
+        btn.classList.remove('liked');
+      } else {
+        liked.push(postId);
+        rec.likes++;
+        btn.classList.add('liked');
+      }
+      setLikedPosts(liked);
+      btn.querySelector('span').textContent = rec.likes;
       if (rec.id) await db.collection('recognitions').doc(rec.id).update({ likes: rec.likes });
     }
 
@@ -1283,42 +1614,14 @@
     document.getElementById('fromName').addEventListener('change', updateProfileCard);
     document.getElementById('fromNameCustom').addEventListener('input', updateProfileCard);
 
-    // Profile dropdown in sidebar
-    document.getElementById('profileSelect').addEventListener('change', function() {
-      const name = this.value;
-      if (!name) return;
-      localStorage.setItem('recognition_wall_username', name);
-      // Sync the fromName dropdown
-      const fromSelect = document.getElementById('fromName');
-      const match = Array.from(fromSelect.options).find(o => o.value === name);
-      if (match) {
-        fromSelect.value = name;
-        document.getElementById('fromNameCustom').style.display = 'none';
-      }
-      // Sync life tab dropdowns
-      const lifePS = document.getElementById('lifeProfileSelect');
-      const lifeFN = document.getElementById('lifeFromName');
-      if (lifePS) { const m = Array.from(lifePS.options).find(o => o.value === name); if (m) lifePS.value = name; }
-      if (lifeFN) { const m = Array.from(lifeFN.options).find(o => o.value === name); if (m) lifeFN.value = name; }
-      updateProfileCard();
-      if (typeof updateLifeProfileCard === 'function') updateLifeProfileCard();
-    });
-
     // --- Profile card ---
     function updateProfileCard() {
-      const fromSelect = document.getElementById('fromName');
-      const fromCustom = document.getElementById('fromNameCustom');
-      const name = fromSelect.value === '__custom__' ? fromCustom.value.trim() : fromSelect.value;
+      const name = localStorage.getItem('recognition_wall_username') || '';
       if (!name) return;
 
       const profile = getProfile(name);
       const avatarEl = document.getElementById('profileAvatar');
       const detailsEl = document.getElementById('profileDetails');
-      const profileSelect = document.getElementById('profileSelect');
-
-      // Sync profile dropdown
-      const match = Array.from(profileSelect.options).find(o => o.value === name);
-      if (match) profileSelect.value = name;
 
       if (profile.avatarUrl) {
         avatarEl.innerHTML = '<img src="' + profile.avatarUrl + '" alt="Avatar">';
@@ -1335,7 +1638,15 @@
 
       // Show profile details
       let html = '';
-      if (profile.birthday) html += '<div class="profile-detail-item"><span class="detail-icon">🎂</span><div><div class="detail-label">Birthday</div><div class="detail-value">' + profile.birthday + '</div></div></div>';
+      if (profile.birthday) {
+        const parts = profile.birthday.split('-');
+        let bdayDisplay = profile.birthday;
+        if (parts.length === 3) {
+          const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+          bdayDisplay = months[parseInt(parts[1])-1] + ' ' + parseInt(parts[2]);
+        }
+        html += '<div class="profile-detail-item"><span class="detail-icon">🎂</span><div><div class="detail-label">Birthday</div><div class="detail-value">' + bdayDisplay + '</div></div></div>';
+      }
       if (profile.pronouns) html += '<div class="profile-detail-item"><span class="detail-icon">💬</span><div><div class="detail-label">Pronouns</div><div class="detail-value">' + profile.pronouns + '</div></div></div>';
       if (profile.favDrink) html += '<div class="profile-detail-item"><span class="detail-icon">☕</span><div><div class="detail-label">Drink Order</div><div class="detail-value">' + profile.favDrink + '</div></div></div>';
       if (profile.snacks && profile.snacks.length) html += '<div class="profile-detail-item"><span class="detail-icon">🍿</span><div><div class="detail-label">Fav Snacks</div><div class="profile-tags">' + profile.snacks.map(s => '<span class="profile-tag">' + s + '</span>').join('') + '</div></div></div>';
@@ -1343,6 +1654,7 @@
       if (profile.holidays && profile.holidays.length) html += '<div class="profile-detail-item"><span class="detail-icon">🎉</span><div><div class="detail-label">Holidays</div><div class="profile-tags">' + profile.holidays.map(h => '<span class="profile-tag">' + h + '</span>').join('') + '</div></div></div>';
       if (profile.funFact) html += '<div class="profile-detail-item"><span class="detail-icon">✨</span><div><div class="detail-label">Fun Fact</div><div class="detail-value">' + profile.funFact + '</div></div></div>';
       if (profile.jobTitle) html += '<div class="profile-detail-item"><span class="detail-icon">💼</span><div><div class="detail-label">Job Title</div><div class="detail-value">' + profile.jobTitle + '</div></div></div>';
+      if (profile.whatIDo) html += '<div class="profile-detail-item"><span class="detail-icon">🛠</span><div><div class="detail-label">What I Do</div><div class="detail-value">' + profile.whatIDo + '</div></div></div>';
       if (profile.givesEnergy) html += '<div class="profile-detail-item"><span class="detail-icon">⚡</span><div><div class="detail-label">Gives Me Energy</div><div class="detail-value">' + profile.givesEnergy + '</div></div></div>';
       if (profile.drainsEnergy) html += '<div class="profile-detail-item"><span class="detail-icon">🔋</span><div><div class="detail-label">Drains My Energy</div><div class="detail-value">' + profile.drainsEnergy + '</div></div></div>';
       detailsEl.innerHTML = html;
@@ -1484,7 +1796,7 @@
         '<div class="card-header">' +
         '<div class="card-meta"><h3>' + rec.from + '</h3><span class="timestamp">' + displayTime + '</span></div></div>' +
         '<div class="card-message" id="life-msg-' + index + '">' + rec.message + '</div>' + imageHtml +
-        '<div class="card-actions"><button class="action-btn" onclick="toggleLifeLike(this,' + index + ')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg> <span>' + rec.likes + '</span></button> ' + catHtml + '</div></div>';
+        '<div class="card-actions"><button class="action-btn' + (getLifeLikedPosts().includes(rec.id) ? ' liked' : '') + '" onclick="toggleLifeLike(this,' + index + ')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg> <span>' + rec.likes + '</span></button> ' + catHtml + '</div></div>';
     }
 
     function renderLifeFeed() {
@@ -1497,10 +1809,15 @@
 
       // Apply filters
       const filterFrom = fromSel.value;
+      const filterCat = document.getElementById('lifeFilterCat').value;
       const filterDate = document.getElementById('lifeFilterDate').value;
 
       const filtered = lifeRecognitions.filter((r) => {
         if (filterFrom && r.from !== filterFrom) return false;
+        if (filterCat) {
+          const cats = Array.isArray(r.category) ? r.category : (r.category ? [r.category] : []);
+          if (!cats.includes(filterCat)) return false;
+        }
         if (filterDate && r.createdAt) {
           const d = new Date(r.createdAt);
           const ds = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
@@ -1517,6 +1834,7 @@
 
     function clearLifeFilters() {
       document.getElementById('lifeFilterFrom').value = '';
+      document.getElementById('lifeFilterCat').value = '';
       document.getElementById('lifeFilterDate').value = '';
       renderLifeFeed();
     }
@@ -1560,7 +1878,15 @@
       }
 
       let html = '';
-      if (profile.birthday) html += '<div class="profile-detail-item"><span class="detail-icon">🎂</span><div><div class="detail-label">Birthday</div><div class="detail-value">' + profile.birthday + '</div></div></div>';
+      if (profile.birthday) {
+        const parts = profile.birthday.split('-');
+        let bdayDisplay = profile.birthday;
+        if (parts.length === 3) {
+          const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+          bdayDisplay = months[parseInt(parts[1])-1] + ' ' + parseInt(parts[2]);
+        }
+        html += '<div class="profile-detail-item"><span class="detail-icon">🎂</span><div><div class="detail-label">Birthday</div><div class="detail-value">' + bdayDisplay + '</div></div></div>';
+      }
       if (profile.pronouns) html += '<div class="profile-detail-item"><span class="detail-icon">💬</span><div><div class="detail-label">Pronouns</div><div class="detail-value">' + profile.pronouns + '</div></div></div>';
       if (profile.favDrink) html += '<div class="profile-detail-item"><span class="detail-icon">☕</span><div><div class="detail-label">Drink Order</div><div class="detail-value">' + profile.favDrink + '</div></div></div>';
       if (profile.snacks && profile.snacks.length) html += '<div class="profile-detail-item"><span class="detail-icon">🍿</span><div><div class="detail-label">Fav Snacks</div><div class="profile-tags">' + profile.snacks.map(s => '<span class="profile-tag">' + s + '</span>').join('') + '</div></div></div>';
@@ -1568,6 +1894,7 @@
       if (profile.holidays && profile.holidays.length) html += '<div class="profile-detail-item"><span class="detail-icon">🎉</span><div><div class="detail-label">Holidays</div><div class="profile-tags">' + profile.holidays.map(h => '<span class="profile-tag">' + h + '</span>').join('') + '</div></div></div>';
       if (profile.funFact) html += '<div class="profile-detail-item"><span class="detail-icon">✨</span><div><div class="detail-label">Fun Fact</div><div class="detail-value">' + profile.funFact + '</div></div></div>';
       if (profile.jobTitle) html += '<div class="profile-detail-item"><span class="detail-icon">💼</span><div><div class="detail-label">Job Title</div><div class="detail-value">' + profile.jobTitle + '</div></div></div>';
+      if (profile.whatIDo) html += '<div class="profile-detail-item"><span class="detail-icon">🛠</span><div><div class="detail-label">What I Do</div><div class="detail-value">' + profile.whatIDo + '</div></div></div>';
       if (profile.givesEnergy) html += '<div class="profile-detail-item"><span class="detail-icon">⚡</span><div><div class="detail-label">Gives Me Energy</div><div class="detail-value">' + profile.givesEnergy + '</div></div></div>';
       if (profile.drainsEnergy) html += '<div class="profile-detail-item"><span class="detail-icon">🔋</span><div><div class="detail-label">Drains My Energy</div><div class="detail-value">' + profile.drainsEnergy + '</div></div></div>';
       detailsEl.innerHTML = html;
@@ -1575,13 +1902,33 @@
       if (linkEl) linkEl.href = 'profile.html?name=' + encodeURIComponent(name);
     }
 
+    function getLifeLikedPosts() {
+      const user = localStorage.getItem('recognition_wall_username') || '';
+      const key = 'liked_life_posts_' + user;
+      try { return JSON.parse(localStorage.getItem(key)) || []; } catch(e) { return []; }
+    }
+    function setLifeLikedPosts(arr) {
+      const user = localStorage.getItem('recognition_wall_username') || '';
+      const key = 'liked_life_posts_' + user;
+      localStorage.setItem(key, JSON.stringify(arr));
+    }
+
     function toggleLifeLike(btn, index) {
-      btn.classList.toggle('liked');
-      const span = btn.querySelector('span');
-      if (btn.classList.contains('liked')) lifeRecognitions[index].likes++;
-      else lifeRecognitions[index].likes--;
-      span.textContent = lifeRecognitions[index].likes;
-      if (lifeRecognitions[index].id) db.collection('recognitions').doc(lifeRecognitions[index].id).update({ likes: lifeRecognitions[index].likes });
+      const rec = lifeRecognitions[index];
+      const postId = rec.id;
+      let liked = getLifeLikedPosts();
+      if (liked.includes(postId)) {
+        liked = liked.filter(id => id !== postId);
+        rec.likes = Math.max(0, rec.likes - 1);
+        btn.classList.remove('liked');
+      } else {
+        liked.push(postId);
+        rec.likes++;
+        btn.classList.add('liked');
+      }
+      setLifeLikedPosts(liked);
+      btn.querySelector('span').textContent = rec.likes;
+      if (rec.id) db.collection('recognitions').doc(rec.id).update({ likes: rec.likes });
     }
 
     async function submitLifePost() {
@@ -1642,17 +1989,89 @@
 
     // === About the Team ===
     const allMembers = [
-      'Balamurugan Natarajan','Corbin Weaver','Dane Ebanez','Hattie Duke','Ivan Sarmiento','Kris Kellner',
-      'Lavanya Cheruku','Logan Nichols','Malia Jones','Nirali Patel',
-      'Peter Siemsen','Rodrigo Navarro Morales','Ryan Ward',
-      'Sanjeevkumar Senthil','Shihan Shaheed','Summit Modi',
-      'Val Turcin','Vamsi Krishna Rallabhandi'
+      'Aileen Park','Akhil Reddy Leburu','Alan Le','Amanda Ramsay',
+      'Amy Thompson','Angel Murgano','Ani Argiris','Anna Zheng','Anthony Pachelli',
+      'Azad K Patel','Balaji Chandramohan','Balamurugan Natarajan','Ben Prado',
+      'Bharath Matlapudi','Breno Marcolino','Carlos Urriola','Cassie Endicott Gentry',
+      'Chris Longfield-Smith','Corbin Weaver','Daggim H Desta',
+      'Daniel Baker','Daniel Kamis','Daniel Komanapalli','Deepa Balakrishnan',
+      'Denner Martins Andreao','Dmitri LaCour','Eduardo Gabriel Gosmann Cardoso',
+      'Elijah Jarocki','Evelyn T Marca','Felipe Curvelo de Oliveria',
+      'Gabriel Michelstardter','Gabrielle Harrison','Gustavo Sussekind',
+      'Hajar Bendada','Hannah Eddy','Hattie Duke','Hemant Singh',
+      'Ian Greenwald','Ivan Sarmiento','John Shuford','Jonah Doelger',
+      'Justin Hopkins','Jyotish Jadhav','Kaden M Tourdot','Kaylin Elliott',
+      'Keanan Anderson','Kevin Wagley','Kharella Pozzobon','Kimberly Helms',
+      'Krishna Sukesh Nallapotu','Kristina L Bryan','Lavanya Cheruku',
+      'Leonardo Cavalcante Coutinho','Leonardo Petterin','Logan Nichols',
+      'Lucia Alvarez','Malia Jones','Mark Elmer','Meghan Walsh',
+      'Muhammad Khan','Nandi Xie','Narendra Bagam','Naresh Dunga',
+      'Navaneethan K','Nikita Chaturvedi','Nirali Patel','Pablo Nava',
+      'Peter Siemsen','Pietro Cotta Galvano','Praewpailin Johnson',
+      'Reid Hansen','Ricardo Flores','Rodrigo Morales Navarro','Rolando Santana',
+      'Ryan Reid','Ryan Ward','Sameer Khan','Samuel de Oliveira Rego',
+      'Sanjeevkumar Senthil','Sean Mifflin','Sebastian Rangel',
+      'Shiv Sharma','Shubhada Karluke','Summit Modi','Sushmitha Cherukuri',
+      'Tal Wanish','Thomas Tedesco','Valentin Turcin','Vamsi Krishna Rallabhandi',
+      'Vibin Manthattil Jose','Victor Huerta','Victor Porter','Victor Valente',
+      'Weinner Ivanouskas','Yash Rustagi','Zach K Friedrich'
     ];
 
-    function renderTeamGrid() {
-      const grid = document.getElementById('teamGrid');
-      grid.innerHTML = allMembers.map(name => {
+    function getTeamForMember(name) {
+      for (const [team, members] of Object.entries(teamMembers)) {
+        if (members.includes(name)) return team;
+      }
+      return 'Unassigned';
+    }
+
+    function populateHobbyFilter() {
+      const hobbies = new Set();
+      allMembers.forEach(name => {
         const p = getProfile(name);
+        if (p.hobbies) p.hobbies.forEach(h => hobbies.add(h));
+      });
+      const sel = document.getElementById('teamHobbyFilter');
+      sel.innerHTML = '<option value="">All Hobbies</option>' +
+        [...hobbies].sort().map(h => '<option value="' + h + '">' + h + '</option>').join('');
+    }
+
+    function clearTeamFilters() {
+      document.getElementById('teamSearchFilter').value = '';
+      document.getElementById('teamTeamFilter').value = '';
+      document.getElementById('teamHobbyFilter').value = '';
+      document.getElementById('teamBdayFilter').value = '';
+      filterTeamGrid();
+    }
+
+    function filterTeamGrid() {
+      const search = document.getElementById('teamSearchFilter').value.toLowerCase();
+      const teamFilter = document.getElementById('teamTeamFilter').value;
+      const hobbyFilter = document.getElementById('teamHobbyFilter').value;
+      const bdayFilter = document.getElementById('teamBdayFilter').value;
+
+      const filtered = allMembers.filter(name => {
+        if (search && !name.toLowerCase().includes(search)) return false;
+        if (teamFilter && getTeamForMember(name) !== teamFilter) return false;
+        if (hobbyFilter) {
+          const p = getProfile(name);
+          if (!p.hobbies || !p.hobbies.includes(hobbyFilter)) return false;
+        }
+        if (bdayFilter) {
+          const p = getProfile(name);
+          if (!p.birthday) return false;
+          const parts = p.birthday.split('-');
+          if (parts.length < 2 || parts[1] !== bdayFilter) return false;
+        }
+        return true;
+      });
+      renderTeamGridWith(filtered);
+    }
+
+    function renderTeamGridWith(members) {
+      const grid = document.getElementById('teamGrid');
+      grid.innerHTML = members.map(name => {
+        const p = getProfile(name);
+        const team = p.team || getTeamForMember(name);
         const avatarHtml = p.avatarUrl
           ? '<img src="' + p.avatarUrl + '" alt="Avatar">'
           : '<span>' + getInitials(name) + '</span>';
@@ -1666,21 +2085,92 @@
           (arr && arr.length ? arr.map(t => '<span class="member-tag">' + t + '</span>').join('') : '<span style="color:#999;font-size:0.78rem;">—</span>') +
           '</div></div>';
 
+        let bdayDisplay = '—';
+        if (p.birthday) {
+          const parts = p.birthday.split('-');
+          if (parts.length === 3) {
+            const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            bdayDisplay = months[parseInt(parts[1])-1] + ' ' + parseInt(parts[2]);
+          }
+        }
+
         return '<div class="team-member-card">' +
           '<div class="member-avatar" style="' + avatarBg + '">' + avatarHtml + '</div>' +
           '<div class="member-name">' + name + '</div>' +
-          detail('🎂', 'Birthday', p.birthday) +
+          '<div class="member-detail"><div class="member-detail-label">🏢 Team</div><div class="member-detail-value">' + team + '</div></div>' +
+          detail('🎂', 'Birthday', bdayDisplay) +
           detail('💬', 'Pronouns', p.pronouns) +
           detail('☕', 'Drink Order', p.favDrink) +
           tagDetail('🍿', 'Fav Snacks', p.snacks) +
           tagDetail('🎯', 'Hobbies', p.hobbies) +
           detail('✨', 'Fun Fact', p.funFact) +
           detail('💼', 'Job Title', p.jobTitle) +
+          detail('🛠', 'What I Do', p.whatIDo) +
           detail('⚡', 'Gives Me Energy', p.givesEnergy) +
           detail('🔋', 'Drains My Energy', p.drainsEnergy) +
           '<a class="member-edit" href="profile.html?name=' + encodeURIComponent(name) + '">Edit Profile</a>' +
           '</div>';
       }).join('');
+    }
+
+    function renderTeamGrid() {
+      populateHobbyFilter();
+      renderTeamGridWith(allMembers);
+    }
+
+    // === Directory ===
+    const teamManagers = {
+      'DE & Reporting Ops': ['Kaylin Elliott','Kevin Wagley'],
+      'Engagement & Insights': ['Mark Elmer','Ian Greenwald','Zach K Friedrich'],
+      'Platforms KPIs & AFOA': ['Ryan Ward','Corbin Weaver','John Shuford'],
+      'Strategic Insights': ['Meghan Walsh','Cassie Endicott Gentry','Hemant Singh']
+    };
+    let dirActiveTeam = '';
+    function renderDirectory() {
+      const search = (document.getElementById('dirSearch').value || '').toLowerCase();
+      const teamFilter = document.getElementById('dirTeamFilter').value;
+      const container = document.getElementById('directoryList');
+      const teams = teamFilter ? [teamFilter] : Object.keys(teamMembers);
+
+      let html = '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;">';
+      teams.forEach(team => {
+        const managers = (teamManagers[team] || []).filter(n => !search || n.toLowerCase().includes(search));
+        const members = (teamMembers[team] || []).filter(name => {
+          if ((teamManagers[team] || []).includes(name)) return false;
+          if (!search) return true;
+          return name.toLowerCase().includes(search);
+        }).sort();
+        html += '<div style="background:#fff;border-radius:12px;padding:16px;border:1px solid #d0dce8;box-shadow:0 2px 8px rgba(0,0,0,0.1);">';
+        html += '<div style="font-size:0.9rem;font-weight:700;color:#0057b8;text-align:center;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid #00a3e0;">' + team + '</div>';
+        // Managers section
+        if (managers.length) {
+          html += '<div style="font-size:0.7rem;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Management</div>';
+          managers.forEach(name => {
+            const p = getProfile(name);
+            const avatarHtml = p.avatarUrl ? '<img src="' + p.avatarUrl + '" style="width:100%;height:100%;object-fit:cover;">' : getInitials(name);
+            const bg = p.avatarUrl ? '' : 'background:' + getColor(name);
+            html += '<div style="display:flex;align-items:center;gap:8px;padding:6px 4px;border-bottom:1px solid #f0f0f0;">' +
+              '<div style="width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:0.65rem;flex-shrink:0;overflow:hidden;' + bg + '">' + avatarHtml + '</div>' +
+              '<div style="flex:1;"><span style="font-size:0.82rem;color:#333;font-weight:600;">' + name + '</span>' +
+              (p.jobTitle ? '<div style="font-size:0.7rem;color:#666;">' + p.jobTitle + '</div>' : '') + '</div></div>';
+          });
+          html += '<div style="font-size:0.7rem;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:0.5px;margin:12px 0 6px;">Team Members</div>';
+        }
+        // Members
+        members.forEach(name => {
+          const p = getProfile(name);
+          const avatarHtml = p.avatarUrl ? '<img src="' + p.avatarUrl + '" style="width:100%;height:100%;object-fit:cover;">' : getInitials(name);
+          const bg = p.avatarUrl ? '' : 'background:' + getColor(name);
+          html += '<div style="display:flex;align-items:center;gap:8px;padding:6px 4px;border-bottom:1px solid #f0f0f0;">' +
+            '<div style="width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:0.65rem;flex-shrink:0;overflow:hidden;' + bg + '">' + avatarHtml + '</div>' +
+            '<div style="flex:1;"><span style="font-size:0.82rem;color:#333;">' + name + '</span>' +
+            (p.jobTitle ? '<div style="font-size:0.7rem;color:#666;">' + p.jobTitle + '</div>' : '') + '</div></div>';
+        });
+        if (!managers.length && !members.length) html += '<div style="color:#888;font-size:0.82rem;text-align:center;">No members</div>';
+        html += '</div>';
+      });
+      html += '</div>';
+      container.innerHTML = html;
     }
 
     renderTeamGrid();
@@ -1749,6 +2239,28 @@
       } else {
         list.innerHTML = weekItems.map(item =>
           '<div class="this-week-item"><div class="this-week-date">' + item.dayLabel + '</div><div class="this-week-info">' + item.html + '</div></div>'
+        ).join('');
+      }
+    }
+
+    function renderBdayMonth() {
+      const month = String(calMonth + 1).padStart(2, '0');
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const bdays = [];
+      Object.values(allProfiles).forEach(p => {
+        if (!p.birthday) return;
+        const parts = p.birthday.split('-');
+        if (parts.length === 3 && parts[1] === month) {
+          bdays.push({ name: p.personName, day: parseInt(parts[2]) });
+        }
+      });
+      bdays.sort((a, b) => a.day - b.day);
+      const list = document.getElementById('bdayMonthList');
+      if (bdays.length === 0) {
+        list.innerHTML = '<div class="this-week-empty">No birthdays this month.</div>';
+      } else {
+        list.innerHTML = bdays.map(b =>
+          '<div class="this-week-item"><div class="this-week-date">' + months[calMonth] + ' ' + b.day + '</div><div class="this-week-info"><div class="this-week-title">🎂 ' + b.name + '</div></div></div>'
         ).join('');
       }
     }
@@ -1822,6 +2334,7 @@
 
       grid.innerHTML = html;
       renderThisWeek();
+      renderBdayMonth();
     }
 
     let calModalDate = '';
@@ -1911,7 +2424,59 @@
 
     initCal();
 
+    // === Notifications ===
+    function checkNotifications() {
+      const workLast = parseInt(localStorage.getItem('lastSeen_work') || '0');
+      const lifeLast = parseInt(localStorage.getItem('lastSeen_life') || '0');
+      const calLast = parseInt(localStorage.getItem('lastSeen_calendar') || '0');
+      const activeTab = document.querySelector('.tab-btn.active');
+      const activeId = activeTab ? activeTab.id.replace('tab-', '') : '';
+
+      if (activeId !== 'work' && recognitions.some(r => r.createdAt > workLast)) {
+        document.getElementById('notif-work').classList.add('visible');
+      }
+      if (activeId !== 'life' && lifeRecognitions.some(r => r.createdAt > lifeLast)) {
+        document.getElementById('notif-life').classList.add('visible');
+      }
+      if (activeId !== 'calendar' && calEvents.some(e => e.createdAt > calLast)) {
+        document.getElementById('notif-calendar').classList.add('visible');
+      }
+    }
+
     // === Initialize: load from Firebase ===
+    // Populate all member select dropdowns dynamically
+    (function populateMemberSelects() {
+      // Build grouped options by team, alphabetically sorted within each
+      function buildGroupedOpts() {
+        let html = '';
+        Object.keys(teamMembers).forEach(team => {
+          const members = [...teamMembers[team]].sort();
+          if (!members.length) return;
+          html += '<optgroup label="' + team + '">';
+          members.forEach(n => { html += '<option value="' + n + '">' + n + '</option>'; });
+          html += '</optgroup>';
+        });
+        return html;
+      }
+      const opts = buildGroupedOpts();
+      ['profileSelect','lifeProfileSelect'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = '<option value="" disabled selected>Select your name...</option>' + opts;
+      });
+      ['fromName'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = '<option value="" disabled selected>Your Name</option>' + opts + '<optgroup label="—"><option value="__custom__">Someone else (type below)</option></optgroup>';
+      });
+      ['lifeFromName'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = '<option value="" disabled selected>Your Name</option>' + opts;
+      });
+      ['toNameAdd'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = '<option value="" disabled selected>Add a person...</option>' + opts;
+      });
+    })();
+
     (async function init() {
       const ok = await loadAllData();
       if (!ok) {
@@ -1923,6 +2488,7 @@
       updateLifeProfileCard();
       renderTeamGrid();
       updateDataStatus();
+      checkNotifications();
     })();
   </script>
 </body>
