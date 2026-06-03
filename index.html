@@ -307,9 +307,10 @@
     </div>
   </div>
 
-  <header class="header">
+  <header class="header" style="position:relative;">
     <h1> The Space </h1>
     <p>An inclusive space where the team can celebrate each other's accomplishments!</p>
+    <button onclick="localStorage.removeItem('recognition_wall_username');localStorage.removeItem('recognition_wall_team');localStorage.removeItem('last_visit_time');location.reload();" style="position:absolute;top:16px;right:20px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;padding:6px 14px;border-radius:8px;font-size:0.8rem;cursor:pointer;">Logout</button>
   </header>
 
   <nav class="tab-bar">
@@ -792,13 +793,13 @@
     // === Login Overlay ===
     const teamMembers = {
       'DE & Reporting Ops': [
-        'Kaylin Elliott','Kevin Wagley','Denner Martins Andreao','Leonardo Cavalcante Coutinho',
+        'Ben Anderson','Kaylin Elliott','Kevin Wagley','Denner Martins Andreao','Leonardo Cavalcante Coutinho',
         'Alan Le','Gustavo Sussekind','Daniel Baker','Samuel de Oliveira Rego',
         'Chris Longfield-Smith','Deepa Balakrishnan','Weinner Ivanouskas',
         'Felipe Curvelo de Oliveria','Nandi Xie'
       ],
       'Engagement & Insights': [
-        'Mark Elmer','Lucia Alvarez','Ian Greenwald','Keanan Anderson','Hannah Eddy',
+        'Ben Anderson','Mark Elmer','Lucia Alvarez','Ian Greenwald','Keanan Anderson','Hannah Eddy',
         'Elijah Jarocki','Dmitri LaCour','Aileen Park','Ben Prado',
         'Eduardo Gabriel Gosmann Cardoso','Kimberly Helms','Praewpailin Johnson',
         'Sean Mifflin','Leonardo Petterin','Daggim H Desta','Justin Hopkins',
@@ -810,7 +811,7 @@
         'Carlos Urriola'
       ],
       'Platforms KPIs & AFOA': [
-        'Ryan Ward','Pietro Cotta Galvano','Krishna Sukesh Nallapotu','John Shuford',
+        'Ben Anderson','Ryan Ward','Pietro Cotta Galvano','Krishna Sukesh Nallapotu','John Shuford',
         'Ani Argiris','Anthony Pachelli','Anna Zheng','Nikita Chaturvedi',
         'Amanda Ramsay','Breno Marcolino','Ryan Reid','Thomas Tedesco',
         'Valentin Turcin','Victor Valente','Corbin Weaver','Logan Nichols',
@@ -819,7 +820,7 @@
         'Malia Jones','Balamurugan Natarajan','Vamsi Krishna Rallabhandi','Peter Siemsen'
       ],
       'Strategic Insights': [
-        'Meghan Walsh','Hajar Bendada','Balaji Chandramohan','Jonah Doelger',
+        'Ben Anderson','Meghan Walsh','Hajar Bendada','Balaji Chandramohan','Jonah Doelger',
         'Cassie Endicott Gentry','Nicholas Anson','Sushmitha Cherukuri',
         'Muhammad Khan','Azad K Patel','Narendra Bagam','Naresh Dunga',
         'Daniel Komanapalli','Shiv Sharma','Kristina L Bryan','Jyotish Jadhav',
@@ -935,6 +936,7 @@
     function getProfile(name) {
       const defaults = {
         'Ryan Ward': { jobTitle: 'Director' },
+        'Ben Anderson': { jobTitle: 'Sr Dir, Data Insights' },
         'Corbin Weaver': { jobTitle: 'Mgr, Data Insights' },
         'John Shuford': { jobTitle: 'Mgr, Data Insights' },
         'Kaylin Elliott': { jobTitle: 'Sr Mgr, Data Insights' },
@@ -1993,6 +1995,7 @@
 
     // === About the Team ===
     const allMembers = [
+      'Ben Anderson',
       'Aileen Park','Akhil Reddy Leburu','Alan Le','Amanda Ramsay',
       'Amy Thompson','Angel Murgano','Ani Argiris','Anna Zheng','Anthony Pachelli',
       'Azad K Patel','Balaji Chandramohan','Balamurugan Natarajan','Ben Prado',
@@ -2136,7 +2139,20 @@
       const container = document.getElementById('directoryList');
       const teams = teamFilter ? [teamFilter] : Object.keys(teamMembers);
 
-      let html = '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;">';
+      let html = '';
+      // Show Ben Anderson at the top as Sr Director over all teams
+      if (!teamFilter && (!search || 'ben anderson'.includes(search))) {
+        const p = getProfile('Ben Anderson');
+        const avatarHtml = p.avatarUrl ? '<img src="' + p.avatarUrl + '" style="width:100%;height:100%;object-fit:cover;">' : getInitials('Ben Anderson');
+        const bg = p.avatarUrl ? '' : 'background:' + getColor('Ben Anderson');
+        html += '<div style="display:flex;align-items:center;gap:10px;padding:8px 16px;background:#fff;border-radius:8px;border:1px solid #d0dce8;margin-bottom:12px;width:100%;">' +
+          '<div style="font-size:0.7rem;font-weight:700;color:#666;text-transform:uppercase;">Sr Leadership</div>' +
+          '<div style="width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:0.7rem;flex-shrink:0;overflow:hidden;' + bg + '">' + avatarHtml + '</div>' +
+          '<span style="font-size:0.88rem;color:#333;font-weight:600;">Ben Anderson</span>' +
+          '<span style="font-size:0.7rem;color:#666;">Sr Dir, Data Insights</span></div>';
+      }
+
+      html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;">';
       teams.forEach(team => {
         const managers = (teamManagers[team] || []).filter(n => !search || n.toLowerCase().includes(search));
         const members = (teamMembers[team] || []).filter(name => {
@@ -2154,9 +2170,9 @@
             const avatarHtml = p.avatarUrl ? '<img src="' + p.avatarUrl + '" style="width:100%;height:100%;object-fit:cover;">' : getInitials(name);
             const bg = p.avatarUrl ? '' : 'background:' + getColor(name);
             html += '<div style="display:flex;align-items:center;gap:8px;padding:6px 4px;border-bottom:1px solid #f0f0f0;">' +
-              '<div style="width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:0.65rem;flex-shrink:0;overflow:hidden;' + bg + '">' + avatarHtml + '</div>' +
-              '<div style="flex:1;"><span style="font-size:0.82rem;color:#333;font-weight:600;">' + name + '</span>' +
-              (p.jobTitle ? '<div style="font-size:0.7rem;color:#666;">' + p.jobTitle + '</div>' : '') + '</div></div>';
+              '<div style="width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:0.7rem;flex-shrink:0;overflow:hidden;' + bg + '">' + avatarHtml + '</div>' +
+              '<div style="flex:1;"><span style="font-size:0.88rem;color:#333;font-weight:600;">' + name + '</span>' +
+              (p.jobTitle ? '<div style="font-size:0.75rem;color:#666;">' + p.jobTitle + '</div>' : '') + '</div></div>';
           });
           html += '<div style="font-size:0.7rem;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:0.5px;margin:12px 0 6px;">Team Members</div>';
         }
@@ -2166,9 +2182,9 @@
           const avatarHtml = p.avatarUrl ? '<img src="' + p.avatarUrl + '" style="width:100%;height:100%;object-fit:cover;">' : getInitials(name);
           const bg = p.avatarUrl ? '' : 'background:' + getColor(name);
           html += '<div style="display:flex;align-items:center;gap:8px;padding:6px 4px;border-bottom:1px solid #f0f0f0;">' +
-            '<div style="width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:0.65rem;flex-shrink:0;overflow:hidden;' + bg + '">' + avatarHtml + '</div>' +
-            '<div style="flex:1;"><span style="font-size:0.82rem;color:#333;">' + name + '</span>' +
-            (p.jobTitle ? '<div style="font-size:0.7rem;color:#666;">' + p.jobTitle + '</div>' : '') + '</div></div>';
+            '<div style="width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:0.7rem;flex-shrink:0;overflow:hidden;' + bg + '">' + avatarHtml + '</div>' +
+            '<div style="flex:1;"><span style="font-size:0.88rem;color:#333;font-weight:600;">' + name + '</span>' +
+            (p.jobTitle ? '<div style="font-size:0.75rem;color:#666;">' + p.jobTitle + '</div>' : '') + '</div></div>';
         });
         if (!managers.length && !members.length) html += '<div style="color:#888;font-size:0.82rem;text-align:center;">No members</div>';
         html += '</div>';
