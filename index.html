@@ -12,7 +12,7 @@
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #02193d; color: #1a1a2e; min-height: 100vh; }
 
     /* Login Overlay */
-    .login-overlay { position: fixed; inset: 0; background: #02193d; z-index: 9999; display: flex; align-items: center; justify-content: center; }
+    .login-overlay { position: fixed; inset: 0; background: linear-gradient(135deg, #1c77e0, #05073e); z-index: 9999; display: flex; align-items: center; justify-content: center; }
     .login-overlay.hidden { display: none; }
     .login-card { background: #ffffff; border-radius: 20px; padding: 64px 60px; text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,0.4); max-width: 840px; width: 90%; }
     .login-card h1 { font-size: 1.8rem; color: #0057b8; margin-bottom: 8px; }
@@ -229,7 +229,7 @@
     .calendar-nav:hover { background: #e8f4fd; }
     .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: #d0dce8; border-radius: 12px; overflow: hidden; }
     .calendar-day-label { background: #0057b8; color: #ffffff; text-align: center; padding: 10px 4px; font-size: 0.78rem; font-weight: 600; text-transform: uppercase; }
-    .calendar-day { background: #ffffff; min-height: 90px; padding: 6px; position: relative; cursor: pointer; transition: background 0.15s; }
+    .calendar-day { background: #ffffff; height: 100px; padding: 6px; position: relative; cursor: pointer; transition: background 0.15s; overflow: hidden; }
     .calendar-day:hover { background: #f0f5fa; }
     .calendar-day.other-month { background: #f5f7fa; opacity: 0.5; }
     .calendar-day.today { background: #e8f4fd; }
@@ -275,12 +275,12 @@
     .this-week-cat { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 0.7rem; margin-left: 6px; }
 
     /* Calendar layout */
-    .cal-layout { max-width: 1400px; margin: 24px auto; padding: 0 16px; display: flex; gap: 16px; align-items: flex-start; }
+    .cal-layout { max-width: 1500px; margin: 24px auto; padding: 0 16px; display: flex; gap: 16px; align-items: flex-start; }
     .cal-sidebar { width: 300px; flex-shrink: 0; position: sticky; top: 16px; }
     .cal-main { flex: 1; min-width: 0; }
     .cal-sidebar .this-week { margin-bottom: 0; }
     .cal-sidebar .this-week + .this-week { margin-top: 16px; }
-    .calendar-wrap { margin: 0; }
+    .calendar-wrap { margin: 0; max-width: 1100px; }
     @media (max-width: 960px) {
       .cal-layout { flex-direction: column; }
       .cal-sidebar { width: 100%; position: static; }
@@ -304,6 +304,7 @@
         <option value="" disabled selected>Choose your name...</option>
       </select>
       <button class="login-btn" id="loginBtn" disabled onclick="doLogin()">Enter The Space</button>
+      <p style="margin-top:16px;font-size:0.8rem;color:#888;line-height:1.4;">This site is built on integrity. You can view and edit any profile, but please be respectful of your teammates.</p>
     </div>
   </div>
 
@@ -314,7 +315,7 @@
   </header>
 
   <nav class="tab-bar">
-    <button class="tab-btn" onclick="switchTab('about')" id="tab-about">About the Team</button>
+    <button class="tab-btn" onclick="switchTab('about')" id="tab-about">About The Team</button>
     <button class="tab-btn active" onclick="switchTab('work')" id="tab-work">Work Announcements<span class="notif-dot" id="notif-work"></span></button>
     <button class="tab-btn" onclick="switchTab('life')" id="tab-life">Life Announcements<span class="notif-dot" id="notif-life"></span></button>
     <button class="tab-btn" onclick="switchTab('resources')" id="tab-resources">Team Resources</button>
