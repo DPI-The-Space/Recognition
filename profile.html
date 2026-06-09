@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22gold%22><polygon points=%2212,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26%22/></svg>">
-  <title>My Profile - The Extra Mile</title>
+  <link rel="icon" href="TheSpace-Logo-White.png">
+  <title>My Profile - The Space</title>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <style>
@@ -45,9 +45,12 @@
   </style>
 </head>
 <body>
-  <header class="header">
-    <h1>My Profile</h1>
-    <p><a href="recognition.html">&larr; Back to Recognition Wall</a></p>
+  <header class="header" style="position:relative;display:flex;align-items:center;justify-content:center;">
+    <img src="TheSpace-Logo-Blue.png" alt="The Space" style="position:absolute;left:20px;height:48px;">
+    <div style="text-align:center;">
+      <h1>My Profile</h1>
+      <p><a href="index.html#about">&larr; Back to The Space</a></p>
+    </div>
   </header>
 
   <div class="container">
@@ -69,6 +72,7 @@
         <div class="form-group">
           <label for="birthday">Birthday</label>
           <input type="date" id="birthday">
+          <div style="font-size:0.75rem;color:#888;margin-top:4px;">Your birthday will be automatically added to the team calendar.</div>
         </div>
         <div class="form-group">
           <label for="pronouns">Pronouns</label>
@@ -424,7 +428,7 @@
     }
 
     if (!userName) {
-      document.querySelector('.container').innerHTML = '<div class="profile-section" style="text-align:center;padding:40px;"><h2>No name selected</h2><p style="margin-top:12px;color:#666;">Please select your name on the <a href="recognition.html" style="color:#0057b8;">Recognition Wall</a> first.</p></div>';
+      document.querySelector('.container').innerHTML = '<div class="profile-section" style="text-align:center;padding:40px;"><h2>No name selected</h2><p style="margin-top:12px;color:#666;">Please select your name on <a href="index.html" style="color:#0057b8;">The Space</a> first.</p></div>';
     } else {
       loadProfile();
     }

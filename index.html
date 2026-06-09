@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22gold%22><polygon points=%2212,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26%22/></svg>">
-  <title>The Extra Mile</title>
+  <link rel="icon" href="TheSpace-Logo-White.png">
+  <title>The Space</title>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <style>
@@ -14,7 +14,7 @@
     /* Login Overlay */
     .login-overlay { position: fixed; inset: 0; background: linear-gradient(135deg, #1c77e0, #05073e); z-index: 9999; display: flex; align-items: center; justify-content: center; }
     .login-overlay.hidden { display: none; }
-    .login-card { background: #ffffff; border-radius: 20px; padding: 64px 60px; text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,0.4); max-width: 840px; width: 90%; }
+    .login-card { background: #ffffff; border-radius: 20px; padding: 80px 60px; text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,0.4); max-width: 840px; width: 90%; }
     .login-card h1 { font-size: 1.8rem; color: #0057b8; margin-bottom: 8px; }
     .login-card p { color: #666; font-size: 0.95rem; margin-bottom: 24px; }
     .login-card select { width: 100%; padding: 12px 16px; border: 1.5px solid #c0d0e0; border-radius: 10px; font-size: 1rem; font-family: inherit; appearance: none; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%230057b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E") no-repeat right 14px center; padding-right: 36px; cursor: pointer; margin-bottom: 16px; }
@@ -32,7 +32,7 @@
     /* Team section headers */
     .team-section-header { width: 100%; text-align: left; padding: 12px 16px; font-size: 1.1rem; font-weight: 700; color: #ffffff; margin-top: 16px; border-bottom: 2px solid #00a3e0; }
 
-    .header { background: linear-gradient(135deg, #1c77e0, #05073e); color: white; padding: 24px; text-align: center; }
+    .header { background: linear-gradient(to right, #1b74dc 80px, #1c77e0 150px, #05073e); color: white; padding: 24px; text-align: center; }
     .header h1 { font-size: 1.8rem; margin-bottom: 4px; }
     .header p { opacity: 0.9; font-size: 0.95rem; }
 
@@ -275,8 +275,8 @@
     .this-week-cat { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 0.7rem; margin-left: 6px; }
 
     /* Calendar layout */
-    .cal-layout { max-width: 1500px; margin: 24px auto; padding: 0 16px; display: flex; gap: 16px; align-items: flex-start; }
-    .cal-sidebar { width: 300px; flex-shrink: 0; position: sticky; top: 16px; }
+    .cal-layout { max-width: 1500px; margin: 24px auto; padding: 0 12px; display: flex; gap: 12px; align-items: flex-start; }
+    .cal-sidebar { width: 340px; flex-shrink: 0; position: sticky; top: 16px; }
     .cal-main { flex: 1; min-width: 0; }
     .cal-sidebar .this-week { margin-bottom: 0; }
     .cal-sidebar .this-week + .this-week { margin-top: 16px; }
@@ -292,7 +292,8 @@
   <!-- Login Overlay -->
   <div class="login-overlay" id="loginOverlay">
     <div class="login-card">
-      <h1>⭐ The Space</h1>
+      <img src="TheSpace-Logo-White.png" alt="The Space" style="width:120px;margin-bottom:16px;">
+      <h1>The Space</h1>
       <p>Welcome! Select your team to get started.</p>
       <div class="team-picker" id="teamPicker">
         <button class="team-pick-btn" onclick="pickTeam(this, 'DE & Reporting Ops')">DE & Reporting Ops</button>
@@ -308,9 +309,12 @@
     </div>
   </div>
 
-  <header class="header" style="position:relative;">
-    <h1> The Space </h1>
-    <p>An inclusive space where the team can celebrate each other's accomplishments!</p>
+  <header class="header" style="position:relative;display:flex;align-items:center;justify-content:center;">
+    <img src="TheSpace-Logo-Blue.png" alt="The Space" style="position:absolute;left:20px;height:48px;">
+    <div style="text-align:center;">
+      <h1> The Space </h1>
+      <p>An inclusive space where the team can celebrate each other's accomplishments!</p>
+    </div>
     <button onclick="localStorage.removeItem('recognition_wall_username');localStorage.removeItem('recognition_wall_team');localStorage.removeItem('last_visit_time');location.reload();" style="position:absolute;top:16px;right:20px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;padding:6px 14px;border-radius:8px;font-size:0.8rem;cursor:pointer;">Logout</button>
   </header>
 
@@ -442,6 +446,13 @@
         </div>
         <div class="form-group">
           <label>Recognizing</label>
+          <select id="toTeamFilter" onchange="filterToNames()" style="width:100%;padding:8px 12px;border:1.5px solid #c0d0e0;border-radius:10px;font-size:0.85rem;margin-bottom:6px;cursor:pointer;">
+            <option value="">All Teams</option>
+            <option value="DE & Reporting Ops">DE &amp; Reporting Ops</option>
+            <option value="Engagement & Insights">Engagement &amp; Insights</option>
+            <option value="Platforms KPIs & AFOA">Platforms KPIs &amp; AFOA</option>
+            <option value="Strategic Insights">Strategic Insights</option>
+          </select>
           <div class="to-tags-wrap" id="toTagsWrap">
             <select id="toNameAdd" style="border:none;outline:none;font-size:0.85rem;background:transparent;color:#1a1a2e;flex:1;min-width:140px;padding:4px 0;cursor:pointer;">
               <option value="" disabled selected>Add a person...</option>
@@ -665,30 +676,30 @@
         <div style="font-size:1rem;font-weight:600;color:#0057b8;">Team Playlist</div>
         <div style="font-size:0.8rem;color:#888;margin-top:4px;">Spotify</div>
       </a>
-      <a href="https://www.nih.gov/health-information/your-healthiest-self-wellness-toolkits/physical-wellness-toolkit/physical-wellness-toolkit-more-resources" target="_blank" style="flex:1;min-width:280px;background:#fff;border-radius:16px;padding:24px;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,0.2);border:1px solid #d0dce8;text-align:center;transition:transform 0.15s;">
-        <div style="font-size:2rem;margin-bottom:8px;">💪</div>
-        <div style="font-size:1rem;font-weight:600;color:#0057b8;">Physical Health Resources</div>
-        <div style="font-size:0.8rem;color:#888;margin-top:4px;">NIH Wellness Toolkit</div>
+      <a href="https://trello.com/b/McsW9YZs/dpi-idea-lab" target="_blank" style="flex:1;min-width:280px;background:#fff;border-radius:16px;padding:24px;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,0.2);border:1px solid #d0dce8;text-align:center;transition:transform 0.15s;">
+        <div style="font-size:2rem;margin-bottom:8px;">🤖</div>
+        <div style="font-size:1rem;font-weight:600;color:#0057b8;">DPI AI Trello Board</div>
+        <div style="font-size:0.8rem;color:#888;margin-top:4px;">DPI Idea Lab</div>
       </a>
       <a href="https://www.mentalhealthcolorado.org/resources/get-help/" target="_blank" style="flex:1;min-width:280px;background:#fff;border-radius:16px;padding:24px;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,0.2);border:1px solid #d0dce8;text-align:center;transition:transform 0.15s;">
         <div style="font-size:2rem;margin-bottom:8px;">❤️</div>
         <div style="font-size:1rem;font-weight:600;color:#0057b8;">Mental Health Resources</div>
         <div style="font-size:0.8rem;color:#888;margin-top:4px;">Mental Health Colorado</div>
       </a>
+      <a href="https://www.nih.gov/health-information/your-healthiest-self-wellness-toolkits/physical-wellness-toolkit/physical-wellness-toolkit-more-resources" target="_blank" style="flex:1;min-width:280px;background:#fff;border-radius:16px;padding:24px;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,0.2);border:1px solid #d0dce8;text-align:center;transition:transform 0.15s;">
+        <div style="font-size:2rem;margin-bottom:8px;">💪</div>
+        <div style="font-size:1rem;font-weight:600;color:#0057b8;">Physical Health Resources</div>
+        <div style="font-size:0.8rem;color:#888;margin-top:4px;">NIH Wellness Toolkit</div>
+      </a>
       <a href="https://corporate.charter.com/newsroom" target="_blank" style="flex:1;min-width:280px;background:#fff;border-radius:16px;padding:24px;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,0.2);border:1px solid #d0dce8;text-align:center;transition:transform 0.15s;">
         <div style="font-size:2rem;margin-bottom:8px;">📰</div>
         <div style="font-size:1rem;font-weight:600;color:#0057b8;">Charter Newsletter</div>
         <div style="font-size:0.8rem;color:#888;margin-top:4px;">Corporate Newsroom</div>
       </a>
-      <a href="https://panorama.charter.com/policies" target="_blank" style="flex:1;min-width:280px;background:#fff;border-radius:16px;padding:24px;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,0.2);border:1px solid #d0dce8;text-align:center;transition:transform 0.15s;">
+      <a href="https://panorama.charter.com/home.html" target="_blank" style="flex:1;min-width:280px;background:#fff;border-radius:16px;padding:24px;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,0.2);border:1px solid #d0dce8;text-align:center;transition:transform 0.15s;">
         <div style="font-size:2rem;margin-bottom:8px;">📋</div>
-        <div style="font-size:1rem;font-weight:600;color:#0057b8;">Policy Information Resources</div>
-        <div style="font-size:0.8rem;color:#888;margin-top:4px;">Panorama</div>
-      </a>
-      <a href="https://panorama.charter.com/humanresources" target="_blank" style="flex:1;min-width:280px;background:#fff;border-radius:16px;padding:24px;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,0.2);border:1px solid #d0dce8;text-align:center;transition:transform 0.15s;">
-        <div style="font-size:2rem;margin-bottom:8px;">👥</div>
-        <div style="font-size:1rem;font-weight:600;color:#0057b8;">Human Resources</div>
-        <div style="font-size:0.8rem;color:#888;margin-top:4px;">Panorama</div>
+        <div style="font-size:1rem;font-weight:600;color:#0057b8;">Panorama</div>
+        <div style="font-size:0.8rem;color:#888;margin-top:4px;">Policies, HR & Resources</div>
       </a>
     </div>
     <p style="max-width:700px;margin:0 auto 40px;padding:0 16px;text-align:center;font-size:0.85rem;color:#8ab4e8;">Have suggestions or want other resources added? Reach out to <a href="mailto:malia.jones@spectrum.com" style="color:#00a3e0;">Malia Jones (malia.jones@spectrum.com)</a></p>
@@ -1528,6 +1539,22 @@
       });
     }
 
+    function filterToNames() {
+      const team = document.getElementById('toTeamFilter').value;
+      const sel = document.getElementById('toNameAdd');
+      let html = '<option value="" disabled selected>Add a person...</option>';
+      if (team) {
+        const members = [...(teamMembers[team] || [])].sort();
+        html += members.map(n => '<option value="' + n + '">' + n + '</option>').join('');
+      } else {
+        Object.keys(teamMembers).forEach(t => {
+          const members = [...(teamMembers[t] || [])].sort();
+          html += '<optgroup label="' + t + '">' + members.map(n => '<option value="' + n + '">' + n + '</option>').join('') + '</optgroup>';
+        });
+      }
+      sel.innerHTML = html;
+    }
+
     document.getElementById('toNameAdd').addEventListener('change', function() {
       const name = this.value;
       if (name && !selectedRecipients.includes(name)) {
@@ -2236,8 +2263,7 @@
           weekItems.push({
             dayLabel: dayLabel,
             html: '<div class="this-week-title">' + e.title + catLabel + '</div>' +
-              (e.time ? '<div class="this-week-detail">' + e.time + '</div>' : '') +
-              (e.description ? '<div class="this-week-detail">' + e.description + '</div>' : '')
+              (e.time ? '<div class="this-week-detail">' + e.time + '</div>' : '')
           });
         });
 
@@ -2510,6 +2536,11 @@
       renderTeamGrid();
       updateDataStatus();
       checkNotifications();
+      // Handle hash-based tab navigation
+      const hash = window.location.hash.replace('#', '');
+      if (hash && document.getElementById('tab-' + hash)) {
+        switchTab(hash);
+      }
     })();
   </script>
 </body>
