@@ -329,7 +329,7 @@
 
   <!-- About the Team -->
   <div class="tab-page" id="page-about">
-    <div style="width:100%;padding:16px 24px 14px;background:#1050a0;text-align:center;">
+    <div style="width:100%;padding:16px 24px 14px;background:linear-gradient(to right, #1b74dc 80px, #1c77e0 150px, #05073e);text-align:center;">
       <h2 style="color:#ffffff;font-size:1.3rem;margin-bottom:12px;">Get to know the team!</h2>
       <div style="display:flex;gap:12px;align-items:center;justify-content:center;">
         <span style="font-size:0.85rem;font-weight:600;color:#ffffff;white-space:nowrap;">Filters:</span>
@@ -740,7 +740,7 @@
 
   <!-- Directory -->
   <div class="tab-page" id="page-directory">
-    <div style="width:100%;padding:16px 24px 14px;background:#1050a0;text-align:center;">
+    <div style="width:100%;padding:16px 24px 14px;background:linear-gradient(to right, #1b74dc 80px, #1c77e0 150px, #05073e);text-align:center;">
       <h2 style="color:#ffffff;font-size:1.3rem;margin-bottom:12px;">Team Directory</h2>
       <div style="display:flex;gap:12px;align-items:center;justify-content:center;">
         <select id="dirTeamFilter" onchange="renderDirectory()" style="padding:8px 12px;border:1.5px solid rgba(255,255,255,0.3);border-radius:10px;font-size:0.85rem;background:rgba(255,255,255,0.95);color:#1a1a2e;">
@@ -751,6 +751,9 @@
           <option value="Strategic Insights">Strategic Insights</option>
         </select>
         <input type="text" id="dirSearch" placeholder="Search by name..." oninput="renderDirectory()" style="padding:8px 14px;border:1.5px solid rgba(255,255,255,0.3);border-radius:10px;font-size:0.9rem;background:rgba(255,255,255,0.95);color:#1a1a2e;width:250px;">
+        <select id="dirTitleFilter" onchange="renderDirectory()" style="padding:8px 12px;border:1.5px solid rgba(255,255,255,0.3);border-radius:10px;font-size:0.85rem;background:rgba(255,255,255,0.95);color:#1a1a2e;">
+          <option value="">All Job Titles</option>
+        </select>
       </div>
     </div>
     <div id="directoryList" style="max-width:1400px;margin:24px auto;padding:0 16px;"></div>
@@ -2176,7 +2179,7 @@
     // === Directory ===
     const teamManagers = {
       'DE & Reporting Ops': ['Kaylin Elliott','Kevin Wagley'],
-      'Engagement & Insights': ['Mark Elmer','Ian Greenwald','Zach K Friedrich'],
+      'Engagement & Insights': ['Mark Elmer','Zach K Friedrich','Ian Greenwald'],
       'Platforms KPIs & AFOA': ['Ryan Ward','Corbin Weaver','John Shuford'],
       'Strategic Insights': ['Meghan Walsh','Cassie Endicott Gentry','Hemant Singh']
     };
@@ -2184,6 +2187,16 @@
     function renderDirectory() {
       const search = (document.getElementById('dirSearch').value || '').toLowerCase();
       const teamFilter = document.getElementById('dirTeamFilter').value;
+      const titleSel = document.getElementById('dirTitleFilter');
+      const titleFilter = titleSel.value;
+
+      // Populate title dropdown if empty
+      if (titleSel.options.length <= 1) {
+        const titles = new Set();
+        allMembers.forEach(n => { const t = getProfile(n).jobTitle; if (t) titles.add(t); });
+        [...titles].sort().forEach(t => { const o = document.createElement('option'); o.value = t; o.textContent = t; titleSel.appendChild(o); });
+        if (titleFilter) titleSel.value = titleFilter;
+      }
       const container = document.getElementById('directoryList');
       const teams = teamFilter ? [teamFilter] : Object.keys(teamMembers);
 
@@ -2202,11 +2215,16 @@
 
       html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;">';
       teams.forEach(team => {
-        const managers = (teamManagers[team] || []).filter(n => !search || n.toLowerCase().includes(search));
+        const managers = (teamManagers[team] || []).filter(n => {
+          if (search && !n.toLowerCase().includes(search)) return false;
+          if (titleFilter) { const p = getProfile(n); if ((p.jobTitle || '') !== titleFilter) return false; }
+          return true;
+        });
         const members = (teamMembers[team] || []).filter(name => {
           if ((teamManagers[team] || []).includes(name)) return false;
-          if (!search) return true;
-          return name.toLowerCase().includes(search);
+          if (search && !name.toLowerCase().includes(search)) return false;
+          if (titleFilter) { const p = getProfile(name); if ((p.jobTitle || '') !== titleFilter) return false; }
+          return true;
         }).sort();
         html += '<div style="background:#fff;border-radius:12px;padding:16px;border:1px solid #d0dce8;box-shadow:0 2px 8px rgba(0,0,0,0.1);">';
         html += '<div style="font-size:0.9rem;font-weight:700;color:#0057b8;text-align:center;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid #00a3e0;">' + team + '</div>';
@@ -2499,16 +2517,23 @@
       const activeTab = document.querySelector('.tab-btn.active');
       const activeId = activeTab ? activeTab.id.replace('tab-', '') : '';
 
+      const workDot = document.getElementById('notif-work');
+      const lifeDot = document.getElementById('notif-life');
+      const calDot = document.getElementById('notif-calendar');
+
       if (activeId !== 'work' && recognitions.some(r => r.createdAt > workLast)) {
-        document.getElementById('notif-work').classList.add('visible');
-      }
+        workDot.classList.add('visible');
+      } else { workDot.classList.remove('visible'); }
       if (activeId !== 'life' && lifeRecognitions.some(r => r.createdAt > lifeLast)) {
-        document.getElementById('notif-life').classList.add('visible');
-      }
+        lifeDot.classList.add('visible');
+      } else { lifeDot.classList.remove('visible'); }
       if (activeId !== 'calendar' && calEvents.some(e => e.createdAt > calLast)) {
-        document.getElementById('notif-calendar').classList.add('visible');
-      }
+        calDot.classList.add('visible');
+      } else { calDot.classList.remove('visible'); }
     }
+
+    // Re-check notifications every 30 seconds for multi-user updates
+    setInterval(async () => { await loadAllData(); checkNotifications(); }, 30000);
 
     // === Initialize: load from Firebase ===
     // Populate all member select dropdowns dynamically
