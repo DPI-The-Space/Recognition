@@ -372,10 +372,6 @@
     <div class="profile-column">
       <div class="profile-card" id="profileCard">
         <div class="profile-avatar" id="profileAvatar" style="background: #0057b8;">?</div>
-        <div class="profile-stats">
-          <span><strong id="statGiven">0</strong> Given</span>
-          <span><strong id="statReceived">0</strong> Received</span>
-        </div>
         <div class="profile-details" id="profileDetails"></div>
         <a href="profile.html" class="profile-link">Edit Profile</a>
       </div>
@@ -1687,11 +1683,6 @@
         avatarEl.style.background = getColor(name);
       }
 
-      // Count given/received
-      const given = recognitions.filter(r => r.from === name).length;
-      const received = recognitions.filter(r => r.to === name).length;
-      document.getElementById('statGiven').textContent = given;
-      document.getElementById('statReceived').textContent = received;
 
       // Show profile details
       let html = '';
